@@ -202,7 +202,7 @@ select.inp{cursor:pointer}
 .pending-notice{background:var(--gld-l);border:1px solid rgba(200,146,10,.3);border-radius:var(--rs);padding:.85rem 1rem;font-size:.83rem;color:var(--t2);margin-bottom:1rem;line-height:1.55}
 
 /* ── MAP PINS ── */
-.mpin{background:var(--or);color:#fff;font-size:.68rem;font-weight:700;padding:5px 10px;border-radius:20px;box-shadow:0 3px 10px rgba(232,98,10,.35);white-space:nowrap;display:flex;align-items:center;gap:4px;border:2px solid rgba(255,255,255,.3);cursor:pointer}
+.mpin{width:34px;height:34px;background:var(--or);color:#fff;font-size:1.05rem;border-radius:50%;box-shadow:0 3px 10px rgba(232,98,10,.35);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.9);cursor:pointer}
 .mpin.upcoming{background:var(--gld)}
 
 /* ── DONATE ── */
@@ -620,7 +620,12 @@ function updateMapMarkers(items) {
   mapMarkers.forEach(m => m.remove()); mapMarkers = [];
   items.forEach(b => {
     if (!b.lat || !b.lng) return;
-    const icon = L.divIcon({ html: `<div class="mpin ${isLive(b)?'':'upcoming'}">${b.emoji||'🪔'} ${b.name}</div>`, className: '', iconAnchor: [0, 0] });
+    const icon = L.divIcon({
+      html: `<div class="mpin ${isLive(b)?'':'upcoming'}">${b.emoji||'🪔'}</div>`,
+      className: '',
+      iconSize: [34, 34],
+      iconAnchor: [17, 17]
+    });
     const m = L.marker([b.lat, b.lng], { icon }).addTo(mainMap);
     m.on('click', () => openDetail(b.id));
     mapMarkers.push(m);
