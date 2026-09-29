@@ -439,10 +439,8 @@ select.inp{cursor:pointer}
     <input type="text" class="inp" placeholder="e.g. Halwa Puri, Dal Chawal" id="a-menu">
     <label class="lbl">Sponsored By</label>
     <input type="text" class="inp" placeholder="Sponsor name (optional)" id="a-sp">
-    <label class="lbl">Donation UPI ID (optional)</label>
+    <label class="lbl">Donation UPI ID *</label>
     <input type="text" class="inp" placeholder="samiti@upi" id="a-upi" autocomplete="off">
-    <label class="lbl">Donation QR Code (optional, PNG/JPEG/WebP, max 500 KB)</label>
-    <input type="file" class="inp" id="a-qr" accept="image/png,image/jpeg,image/webp">
     <label class="lbl">Icon</label>
     <select class="inp" id="a-emoji">
       <option value="🍛">🍛 Bhandara / Food</option>
@@ -477,7 +475,7 @@ select.inp{cursor:pointer}
       <button class="ab2" onclick="sAmt(this,0)">Other</button>
     </div>
     <input type="tel" class="inp" placeholder="Or enter custom amount" id="c-amt" style="margin-bottom:.8rem">
-    <div class="don-qr-wrap" id="don-qr-wrap"><img class="don-qr" id="don-qr" alt="Donation UPI QR code"><div class="don-upi" id="don-upi"></div></div>
+    <div class="don-upi" id="don-upi"></div>
     <button class="bo" id="don-pay-btn" onclick="payNow()">Pay via UPI</button>
     <div class="upi-n" id="don-pay-note">Google Pay · PhonePe · Paytm · Any UPI</div>
     <button class="btn-cx" onclick="closeDon()">Cancel</button>
@@ -631,7 +629,7 @@ function updateMapMarkers(items) {
 
 // ── SUPABASE ─────────────────────────────────────────────────
 function init() {
-  sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+  sb = supabase.createClient(SUPA_URL, SUPA_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'prashad-lelo-jabalpur-auth' } });
   sb.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
     if (currentUser && (curScr === 's-land' || curScr === 's-auth')) {
@@ -876,6 +874,7 @@ async function loadAdmin() {
         <div class="pc-row"><span>Time</span><span>${esc(b.start_time||'')} – ${esc(b.end_time||'')}</span></div>
         <div class="pc-row"><span>Menu</span><span>${esc(b.menu||'–')}</span></div>
         <div class="pc-row"><span>Sponsor</span><span>${esc(b.sponsor||'–')}</span></div>
+        <div class="pc-row"><span>Phone</span><span>${esc(b.samiti_phone||'–')}</span></div>
         <div class="pc-row"><span>Email</span><span>${esc(b.samiti_email||'–')}</span></div>
       </div>
       ${showActions ? `
@@ -883,6 +882,7 @@ async function loadAdmin() {
         <button class="btn-approve" onclick="updateStatus('${b.id}','approved')">✅ Approve</button>
         <button class="btn-reject"  onclick="updateStatus('${b.id}','rejected')">❌ Reject</button>
       </div>` : ''}
+      <div class="pc-actions"><button class="btn-reject" onclick="removeBhandara('${b.id}')">🗑️ Remove</button></div>
     </div>`;
 
   document.getElementById('admin-pending').innerHTML  = pending.length===0  ? '<div class="empty" style="padding:1.5rem"><span class="empty-i" style="font-size:2rem">🎉</span><div class="empty-s">No pending approvals!</div></div>' : pending.map(b=>renderCard(b,true)).join('');
@@ -909,39 +909,28 @@ async function submitBhandara() {
   const menu   =document.getElementById('a-menu').value.trim();
   const sp     =document.getElementById('a-sp').value.trim();
   const upiId  =document.getElementById('a-upi').value.trim();
-  const qrFile =document.getElementById('a-qr').files[0];
   const emoji  =document.getElementById('a-emoji').value;
   const msg    =document.getElementById('a-msg').value.trim();
-  if (!name||!samiti||!addr||!date) { errEl.textContent='Please fill all required (*) fields'; errEl.style.display='block'; return; }
+  if (!name||!samiti||!addr||!date||!upiId) { errEl.textContent='Please fill all required (*) fields, including Donation UPI ID'; errEl.style.display='block'; return; }
   if (!pinnedLatLng) { errEl.textContent='Please tap the map to pin the location'; errEl.style.display='block'; return; }
   if (upiId&&!/^[^\s@]+@[^\s@]+$/.test(upiId)) { errEl.textContent='Enter a valid UPI ID (for example, samiti@upi)'; errEl.style.display='block'; return; }
-  if (qrFile&&(!['image/png','image/jpeg','image/webp'].includes(qrFile.type)||qrFile.size>512000)) { errEl.textContent='Choose a PNG, JPEG, or WebP QR image no larger than 500 KB'; errEl.style.display='block'; return; }
   const btn=document.getElementById('pub-btn'); btn.disabled=true; btn.innerHTML='Submitting…';
-  let qrPath=null;
   try {
-    if (qrFile) {
-      const ext=qrFile.type==='image/jpeg'?'jpg':qrFile.type.split('/')[1];
-      qrPath=currentUser.id+'/'+crypto.randomUUID()+'.'+ext;
-      const { error: uploadError } = await sb.storage.from('donation-qr').upload(qrPath,qrFile,{contentType:qrFile.type,upsert:false});
-      if (uploadError) throw uploadError;
-    }
     const { error } = await sb.from('bhandaras').insert({
-      name, samiti_name:samiti, address:addr, area:curMeta.area||'Jabalpur',
+      name, samiti_name:samiti, samiti_phone:curMeta.phone||null, address:addr, area:curMeta.area||'Jabalpur',
       samiti_email: currentUser.email,
       user_id:currentUser.id, lat:pinnedLatLng.lat, lng:pinnedLatLng.lng,
       start_time:start, end_time:end, event_date:date,
-      menu, sponsor:sp, upi_id:upiId||null, donation_qr_path:qrPath, emoji, message:msg,
+      menu, sponsor:sp, upi_id:upiId, emoji, message:msg,
       status:'pending'
     });
     if (error) throw error;
   } catch (error) {
-    if (qrPath) await sb.storage.from('donation-qr').remove([qrPath]);
     errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara'); errEl.style.display='block';
     btn.disabled=false; btn.innerHTML='📨 Submit for Approval'; return;
   }
   btn.disabled=false; btn.innerHTML='📨 Submit for Approval';
   ['a-name','a-samiti','a-addr','a-menu','a-sp','a-upi','a-msg'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('a-qr').value='';
   document.getElementById('a-date').value='';
   pinnedLatLng=null; if(addMarker){addMarker.remove();addMarker=null;}
   document.getElementById('pin-hint').textContent='👆 Tap map to drop your pin';
@@ -970,14 +959,22 @@ async function deleteBhandara(id) {
 // ── DONATE ───────────────────────────────────────────────────
 function openDonate(){
   document.getElementById('don-org').textContent='Donate to '+(curBhandara?.samiti_name||'the Samiti');
-  const qrWrap=document.getElementById('don-qr-wrap');
-  const qrUrl=curBhandara?.donation_qr_path?sb.storage.from('donation-qr').getPublicUrl(curBhandara.donation_qr_path).data.publicUrl:'';
-  qrWrap.style.display=qrUrl?'block':'none';
-  if(qrUrl)document.getElementById('don-qr').src=qrUrl;
-  document.getElementById('don-upi').textContent=curBhandara?.upi_id?'UPI ID: '+curBhandara.upi_id:'';
-  document.getElementById('don-pay-btn').style.display=curBhandara?.upi_id?'flex':'none';
-  document.getElementById('don-pay-note').textContent=curBhandara?.upi_id?'Google Pay · PhonePe · Paytm · Any UPI':'Scan the QR code with any UPI app';
+  const upi=curBhandara?.upi_id||'';
+  document.getElementById('don-upi').textContent=upi?'UPI ID: '+upi:'Donation UPI is not available';
+  document.getElementById('don-pay-btn').style.display=upi?'flex':'none';
+  document.getElementById('don-pay-note').textContent=upi?'Google Pay · PhonePe · Paytm · Any UPI':'This Bhandara has no donation UPI ID';
   document.getElementById('don-ov').classList.add('on');
+}
+function closeDon(){document.getElementById('don-ov').classList.remove('on');}
+function sAmt(btn,v){document.querySelectorAll('.ab2').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');selAmtVal=v;if(v===0)document.getElementById('c-amt').focus();}
+function payNow(){
+  const amount=Number(document.getElementById('c-amt').value||selAmtVal);
+  if(!Number.isFinite(amount)||amount<=0){toast('Enter a valid donation amount');return;}
+  if(!curBhandara?.upi_id){toast('Donation UPI ID is not available');return;}
+  const params=new URLSearchParams({pa:curBhandara.upi_id,pn:curBhandara.samiti_name||'Samiti',am:amount.toFixed(2),cu:'INR',tn:'Donation for '+(curBhandara.name||'Bhandara')});
+  window.location.href='upi://pay?'+params.toString();
+}
+document.getElementById('don-ov').classList.add('on');
 }
 function closeDon(){document.getElementById('don-ov').classList.remove('on');}
 function sAmt(btn,v){document.querySelectorAll('.ab2').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');selAmtVal=v;if(v===0)document.getElementById('c-amt').focus();}
