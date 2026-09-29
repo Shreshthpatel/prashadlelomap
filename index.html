@@ -979,17 +979,7 @@ function payNow(){
   const params=new URLSearchParams({pa:curBhandara.upi_id,pn:curBhandara.samiti_name||'Samiti',am:amount.toFixed(2),cu:'INR',tn:'Donation for '+(curBhandara.name||'Bhandara')});
   window.location.href='upi://pay?'+params.toString();
 }
-document.getElementById('don-ov').classList.add('on');
-}
-function closeDon(){document.getElementById('don-ov').classList.remove('on');}
-function sAmt(btn,v){document.querySelectorAll('.ab2').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');selAmtVal=v;if(v===0)document.getElementById('c-amt').focus();}
-function payNow(){
-  const amount=Number(document.getElementById('c-amt').value||selAmtVal);
-  if(!Number.isFinite(amount)||amount<=0){toast('Enter a valid donation amount');return;}
-  if(!curBhandara?.upi_id){toast('Scan the QR code with your UPI app');return;}
-  const params=new URLSearchParams({pa:curBhandara.upi_id,pn:curBhandara.samiti_name||'Samiti',am:amount.toFixed(2),cu:'INR',tn:'Donation for '+(curBhandara.name||'Bhandara')});
-  window.location.href='upi://pay?'+params.toString();
-}
+document.getElementById('don-ov').addEventListener('click',e=>{if(e.target===document.getElementById('don-ov'))closeDon();});
 document.getElementById('don-ov').addEventListener('click',e=>{if(e.target===document.getElementById('don-ov'))closeDon();});
 
 init();
