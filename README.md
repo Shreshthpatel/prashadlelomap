@@ -1,4 +1,4 @@
-# Jabalpur Bhandara
+# Prashad Lelo Jabalpur
 
 A community platform for discovering and submitting Bhandara events in Jabalpur, Madhya Pradesh.
 
