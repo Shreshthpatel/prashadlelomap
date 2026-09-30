@@ -806,7 +806,7 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 // ── BHAKT VIEW ───────────────────────────────────────────────
 async function loadBhaktView() {
   const nowMs=Date.now();
-  if (bhandaraItems.length && nowMs-bhaktLoadedAt < 60000) {
+  if (bhaktLoadedAt && nowMs-bhaktLoadedAt < 60000) {
     renderNearbyChips();
     document.getElementById('bhakt-list').innerHTML = bhandaraItems.length===0
       ? '<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Bhandaras right now. Check back soon!</div></div>'
