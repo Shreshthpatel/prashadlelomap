@@ -151,6 +151,8 @@ select.inp{cursor:pointer}
 .dtl-msg{background:var(--gld-l);border:1px solid rgba(200,146,10,.22);border-radius:var(--rs);padding:1rem;margin-bottom:1.2rem;font-size:.88rem;color:var(--t2);line-height:1.7;font-style:italic}
 .btn-don{width:100%;padding:1rem;background:var(--or);color:#fff;font-size:1rem;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;box-shadow:0 6px 20px rgba(232,98,10,.32);transition:transform .15s}
 .btn-don:active{transform:scale(.98)}
+.btn-map{width:100%;padding:.85rem;background:#fff;color:#1769AA;font-size:.92rem;font-weight:700;border:1.5px solid #B8D8F0;border-radius:var(--r);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.65rem;transition:background .15s,transform .15s}
+.btn-map:active{background:#EFF8FF;transform:scale(.98)}
 
 /* ── DASHBOARD ── */
 .user-card{background:linear-gradient(135deg,var(--or-l),#fff);border:1px solid rgba(232,98,10,.15);border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.9rem;box-shadow:var(--shadow-sm)}
@@ -360,6 +362,7 @@ select.inp{cursor:pointer}
         <div class="ir"><div class="ir-i">🍽️</div><div><div class="ir-l">Prasad / Menu</div><div class="ir-v" id="d-menu"></div></div></div>
       </div>
       <div class="dtl-msg" id="d-msg"></div>
+      <button class="btn-map" id="d-map-btn" onclick="openGoogleMaps()">📍 Open location in Google Maps</button>
       <button class="btn-don" onclick="openDonate()">🤝 Sahyog Karein — Donate</button>
     </div>
   </div>
@@ -441,6 +444,8 @@ select.inp{cursor:pointer}
     <input type="text" class="inp" placeholder="e.g. Halwa Puri, Dal Chawal" id="a-menu">
     <label class="lbl">Sponsored By</label>
     <input type="text" class="inp" placeholder="Sponsor name (optional)" id="a-sp">
+    <label class="lbl">Samiti Mobile Number *</label>
+    <input type="tel" class="inp" placeholder="10-digit mobile number" maxlength="10" id="a-phone" autocomplete="tel">
     <label class="lbl">Donation UPI ID *</label>
     <input type="text" class="inp" placeholder="samiti@upi" id="a-upi" autocomplete="off">
     <label class="lbl">Icon</label>
@@ -821,7 +826,16 @@ async function openDetail(id) {
   document.getElementById('d-sp').textContent=data.sponsor||'Not specified';
   document.getElementById('d-menu').textContent=data.menu||'Not specified';
   document.getElementById('d-msg').textContent=data.message||'All devotees are warmly welcome.';
+  const mapBtn=document.getElementById('d-map-btn');
+  const live=isLive(data);
+  mapBtn.style.display=live && data.lat!=null && data.lng!=null ? 'flex' : 'none';
   prevScr=curScr; go('s-dtl');
+}
+
+function openGoogleMaps(){
+  if (!curBhandara || curBhandara.lat==null || curBhandara.lng==null) { toast('Location is not available'); return; }
+  const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(curBhandara.lat+','+curBhandara.lng);
+  window.open(url,'_blank');
 }
 
 // ── SAMITI DASHBOARD ─────────────────────────────────────────
@@ -915,16 +929,18 @@ async function submitBhandara() {
   const date   =document.getElementById('a-date').value;
   const menu   =document.getElementById('a-menu').value.trim();
   const sp     =document.getElementById('a-sp').value.trim();
+  const phone  =document.getElementById('a-phone').value.trim();
   const upiId  =document.getElementById('a-upi').value.trim();
   const emoji  =document.getElementById('a-emoji').value;
   const msg    =document.getElementById('a-msg').value.trim();
-  if (!name||!samiti||!addr||!date||!upiId) { errEl.textContent='Please fill all required (*) fields, including Donation UPI ID'; errEl.style.display='block'; return; }
+  if (!name||!samiti||!addr||!date||!phone||!upiId) { errEl.textContent='Please fill all required (*) fields, including Samiti Mobile Number and Donation UPI ID'; errEl.style.display='block'; return; }
+  if (!/^\\d{10}$/.test(phone)) { errEl.textContent='Enter a valid 10-digit Samiti mobile number'; errEl.style.display='block'; return; }
   if (!pinnedLatLng) { errEl.textContent='Please tap the map to pin the location'; errEl.style.display='block'; return; }
   if (upiId&&!/^[^\s@]+@[^\s@]+$/.test(upiId)) { errEl.textContent='Enter a valid UPI ID (for example, samiti@upi)'; errEl.style.display='block'; return; }
   const btn=document.getElementById('pub-btn'); btn.disabled=true; btn.innerHTML='Submitting…';
   try {
     const { error } = await sb.from('bhandaras').insert({
-      name, samiti_name:samiti, samiti_phone:curMeta.phone||null, address:addr, area:curMeta.area||'Jabalpur',
+      name, samiti_name:samiti, samiti_phone:phone, address:addr, area:curMeta.area||'Jabalpur',
       samiti_email: currentUser.email,
       user_id:currentUser.id, lat:pinnedLatLng.lat, lng:pinnedLatLng.lng,
       start_time:start, end_time:end, event_date:date,
@@ -937,7 +953,7 @@ async function submitBhandara() {
     btn.disabled=false; btn.innerHTML='📨 Submit for Approval'; return;
   }
   btn.disabled=false; btn.innerHTML='📨 Submit for Approval';
-  ['a-name','a-samiti','a-addr','a-menu','a-sp','a-upi','a-msg'].forEach(i=>document.getElementById(i).value='');
+  ['a-name','a-samiti','a-addr','a-menu','a-sp','a-phone','a-upi','a-msg'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('a-date').value='';
   pinnedLatLng=null; if(addMarker){addMarker.remove();addMarker=null;}
   document.getElementById('pin-hint').textContent='👆 Tap map to drop your pin';
