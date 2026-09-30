@@ -518,7 +518,7 @@ let curScr = 's-land', prevScr = 's-land';
 let curBhandara = null, selAmtVal = 101;
 let mainMap = null, addMapInst = null, pinnedLatLng = null, addMarker = null;
 let mainUserMarker = null, addUserMarker = null, userLocation = null, userLocationPending = false;
-let mapMarkers = [], bhandaraItems = [];
+let mapMarkers = [], bhandaraItems = [], bhaktLoadedAt = 0;
 
 // ── TOAST ────────────────────────────────────────────────────
 let toastT;
@@ -805,6 +805,28 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 // ── BHAKT VIEW ───────────────────────────────────────────────
 async function loadBhaktView() {
+  const nowMs=Date.now();
+  if (bhandaraItems.length && nowMs-bhaktLoadedAt < 60000) {
+    renderNearbyChips();
+    document.getElementById('bhakt-list').innerHTML = bhandaraItems.length===0
+      ? '<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Bhandaras right now. Check back soon!</div></div>'
+      : bhandaraItems.map(b=>`
+      <div class="bc" onclick="openDetail('${b.id}')">
+        <div class="bc-img" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
+        <div class="bc-body">
+          <div class="bc-name">${esc(b.name)}</div>
+          <div class="bc-org">${esc(b.samiti_name||'')} · ${esc(b.area||'Jabalpur')}</div>
+          <div class="tag-row">
+            ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
+            <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
+            <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
+          </div>
+        </div>
+      </div>`).join('');
+    updateMapMarkers(bhandaraItems);
+    if (userLocation) centerMainMapOnUser();
+    return;
+  }
   if (!sb) {
     document.getElementById('chip-row').textContent='Map service is unavailable. Please reload the page.';
     document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not connect</div><div class="empty-s">Reload the page and try again.</div></div>';
@@ -819,6 +841,7 @@ async function loadBhaktView() {
   }
   const items = data||[];
   bhandaraItems = items;
+  bhaktLoadedAt = Date.now();
   renderNearbyChips();
   document.getElementById('bhakt-list').innerHTML = items.length===0
     ? `<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Bhandaras right now. Check back soon!</div></div>`
@@ -896,9 +919,9 @@ async function renderDash() {
 }
 
 // ── ADMIN PANEL ──────────────────────────────────────────────
-async function loadAdmin() {
+async function loadAdmin(loadUsers=true) {
   if (!isAdmin) { toast('Access denied'); go('s-dash','back'); return; }
-  const { data } = await sb.from('bhandaras').select('id,name,samiti_name,area,address,lat,lng,start_time,end_time,event_date,emoji,menu,sponsor,samiti_phone,samiti_email,status,created_at').order('created_at',{ascending:false});
+  const { data } = await sb.from('bhandaras').select('id,name,samiti_name,area,address,start_time,end_time,event_date,emoji,menu,sponsor,samiti_phone,samiti_email,status,created_at').order('created_at',{ascending:false});
   const all = data||[];
   const pending  = all.filter(b=>b.status==='pending');
   const approved = all.filter(b=>b.status==='approved');
@@ -937,7 +960,7 @@ async function loadAdmin() {
   document.getElementById('admin-pending').innerHTML  = pending.length===0  ? '<div class="empty" style="padding:1.5rem"><span class="empty-i" style="font-size:2rem">🎉</span><div class="empty-s">No pending approvals!</div></div>' : pending.map(b=>renderCard(b,true)).join('');
   document.getElementById('admin-approved').innerHTML = approved.length===0 ? '<div style="font-size:.83rem;color:var(--t3);padding:.5rem 0">None yet</div>' : approved.map(b=>renderCard(b,false)).join('');
   document.getElementById('admin-rejected').innerHTML = rejected.length===0 ? '<div style="font-size:.83rem;color:var(--t3);padding:.5rem 0">None</div>' : rejected.map(b=>renderCard(b,false)).join('');
-  loadAdminUsers();
+  if (loadUsers) loadAdminUsers();
 }
 
 async function loadAdminUsers() {
@@ -984,7 +1007,7 @@ async function updateStatus(id, status) {
   const { error } = await sb.from('bhandaras').update({ status }).eq('id', id);
   if (error) { toast('Error: '+error.message); return; }
   toast(status==='approved' ? '✅ Bhandara approved! Now visible to bhakts.' : '❌ Bhandara rejected.');
-  loadAdmin();
+  loadAdmin(false);
 }
 
 // ── ADD BHANDARA ─────────────────────────────────────────────
@@ -1039,7 +1062,7 @@ async function removeBhandara(id) {
   const { error } = await sb.from('bhandaras').delete().eq('id', id);
   if (error) { toast('Could not remove Bhandara'); return; }
   toast('Bhandara removed');
-  loadAdmin();
+  loadAdmin(false);
 }
 
 async function deleteBhandara(id) {
