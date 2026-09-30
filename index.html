@@ -196,6 +196,19 @@ select.inp{cursor:pointer}
 .btn-reject{padding:.75rem;background:var(--cr-l);color:var(--cr);font-size:.88rem;font-weight:700;border:1.5px solid #F09595;border-radius:var(--rs);cursor:pointer;font-family:inherit;transition:background .15s}
 .btn-reject:active{background:#FEE2E2}
 .admin-section{font-size:.72rem;font-weight:700;color:var(--or);letter-spacing:.09em;text-transform:uppercase;margin-bottom:.65rem;margin-top:.25rem}
+.user-admin-card{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:.65rem;box-shadow:var(--shadow-sm)}
+.ua-head{display:flex;align-items:center;gap:.7rem;margin-bottom:.55rem}
+.ua-av{width:38px;height:38px;border-radius:50%;background:var(--or);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.ua-name{font-size:.9rem;font-weight:700;color:var(--t)}
+.ua-email{font-size:.74rem;color:var(--t3);margin-top:2px}
+.ua-row{font-size:.78rem;color:var(--t2);display:flex;gap:.45rem;margin-top:.3rem}
+.ua-row b{color:var(--t3);min-width:58px}
+.ua-actions{display:flex;gap:.5rem;margin-top:.7rem}
+.btn-block{flex:1;padding:.65rem;background:var(--cr-l);color:var(--cr);border:1.5px solid #F09595;border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-unblock{flex:1;padding:.65rem;background:var(--gn-l);color:var(--gn);border:1.5px solid rgba(26,122,62,.25);border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+.ua-status{font-size:.68rem;font-weight:700;padding:3px 7px;border-radius:20px;margin-left:auto}
+.ua-status.ok{background:var(--gn-l);color:var(--gn)}
+.ua-status.blocked{background:var(--cr-l);color:var(--cr)}
 
 /* ── ADD ── */
 .pin-map-wrap{border-radius:var(--rs);overflow:hidden;border:1.5px solid var(--bd);height:220px;margin-bottom:.85rem;position:relative;box-shadow:var(--shadow-sm)}
@@ -404,7 +417,10 @@ select.inp{cursor:pointer}
         <div class="asc"><div class="asc-n" style="color:var(--gn)" id="a-approved">0</div><div class="asc-l">Approved</div></div>
       </div>
 
-      <div class="admin-section">⏳ Pending Approval</div>
+      <div class="admin-section">👥 Samiti Users</div>
+      <div id="admin-users"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
+
+      <div class="admin-section" style="margin-top:1.2rem">⏳ Pending Approval</div>
       <div id="admin-pending"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
 
       <div class="admin-section" style="margin-top:1.2rem">✅ Approved</div>
@@ -645,13 +661,13 @@ function init() {
   sb.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
     if (currentUser && (curScr === 's-land' || curScr === 's-auth')) {
-      loadUserMeta().then(() => go('s-dash'));
+      loadUserMeta().then(ok => { if (ok) go('s-dash'); });
     }
     if (!currentUser && curScr === 's-dash') go('s-land', 'back');
   });
   sb.auth.getSession().then(({ data }) => {
     currentUser = data?.session?.user || null;
-    if (currentUser && curScr === 's-land') loadUserMeta().then(() => go('s-dash'));
+    if (currentUser && curScr === 's-land') loadUserMeta().then(ok => { if (ok) go('s-dash'); });
   });
 }
 async function loadUserMeta() {
@@ -659,8 +675,14 @@ async function loadUserMeta() {
   const { data } = await sb.from('samitis').select('*').eq('user_id', currentUser.id).single();
   const metadata=currentUser.user_metadata||{};
   curMeta = data || { samiti_name:metadata.samiti_name, full_name:metadata.full_name, phone:metadata.phone, area:metadata.area };
+  if (data?.blocked) {
+    await sb.auth.signOut();
+    showErr('login-err','Your Samiti account is temporarily blocked by the administrator.');
+    return false;
+  }
   const { data: adminRow } = await sb.from('admins').select('id').eq('email', currentUser.email).maybeSingle();
   isAdmin = !!adminRow;
+  return true;
 }
 
 // ── TABS & AUTH UI ───────────────────────────────────────────
@@ -722,7 +744,13 @@ async function doLogin() {
   setBtnLoad('login-btn', true, '');
   try {
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if (error) showErr('login-err', error.message.includes('Invalid login')?'Incorrect email or password':error.message);
+    if (error) {
+      showErr('login-err', error.message.includes('Invalid login')?'Incorrect email or password':error.message);
+    } else {
+      const allowed = await loadUserMeta();
+      if (!allowed) return;
+      go('s-dash');
+    }
   } catch (error) {
     showErr('login-err','Could not log in: '+(error?.message||'Check your connection and try again.'));
   } finally {
@@ -909,6 +937,47 @@ async function loadAdmin() {
   document.getElementById('admin-pending').innerHTML  = pending.length===0  ? '<div class="empty" style="padding:1.5rem"><span class="empty-i" style="font-size:2rem">🎉</span><div class="empty-s">No pending approvals!</div></div>' : pending.map(b=>renderCard(b,true)).join('');
   document.getElementById('admin-approved').innerHTML = approved.length===0 ? '<div style="font-size:.83rem;color:var(--t3);padding:.5rem 0">None yet</div>' : approved.map(b=>renderCard(b,false)).join('');
   document.getElementById('admin-rejected').innerHTML = rejected.length===0 ? '<div style="font-size:.83rem;color:var(--t3);padding:.5rem 0">None</div>' : rejected.map(b=>renderCard(b,false)).join('');
+  loadAdminUsers();
+}
+
+async function loadAdminUsers() {
+  if (!isAdmin) return;
+  const { data, error } = await sb.from('samitis').select('id,user_id,samiti_name,full_name,phone,area,email,created_at,blocked').order('created_at',{ascending:false});
+  const box=document.getElementById('admin-users');
+  if (error) { box.innerHTML='<div class="empty" style="padding:1.5rem"><div class="empty-s">Could not load users: '+esc(error.message)+'</div></div>'; return; }
+  const users=data||[];
+  box.innerHTML=users.length ? users.map(u => {
+    const initial=esc((u.full_name||u.samiti_name||u.email||'S').charAt(0).toUpperCase());
+    const status=u.blocked
+      ? '<span class="ua-status blocked">BLOCKED</span>'
+      : '<span class="ua-status ok">ACTIVE</span>';
+    return `<div class="user-admin-card">
+      <div class="ua-head">
+        <div class="ua-av">${initial}</div>
+        <div style="flex:1;min-width:0"><div class="ua-name">${esc(u.samiti_name||'Samiti')}</div><div class="ua-email">${esc(u.email||'No email')}</div></div>
+        ${status}
+      </div>
+      <div class="ua-row"><b>Name</b><span>${esc(u.full_name||'–')}</span></div>
+      <div class="ua-row"><b>Phone</b><span>${esc(u.phone||'–')}</span></div>
+      <div class="ua-row"><b>Area</b><span>${esc(u.area||'–')}</span></div>
+      <div class="ua-row"><b>Joined</b><span>${u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN') : '–'}</span></div>
+      <div class="ua-actions">
+        ${u.blocked
+          ? `<button class="btn-unblock" onclick="setUserBlocked('${u.user_id}',false)">🔓 Unblock user</button>`
+          : `<button class="btn-block" onclick="setUserBlocked('${u.user_id}',true)">🚫 Temporarily block</button>`}
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty" style="padding:1.5rem"><div class="empty-s">No registered Samiti users yet.</div></div>';
+}
+
+async function setUserBlocked(userId, blocked) {
+  if (!isAdmin) { toast('Admin access required'); return; }
+  const action=blocked ? 'temporarily block' : 'unblock';
+  if (!confirm((blocked?'Block':'Unblock')+' this user?')) return;
+  const { error } = await sb.from('samitis').update({blocked}).eq('user_id',userId);
+  if (error) { toast('Could not '+action+' user: '+error.message); return; }
+  toast(blocked ? 'User blocked' : 'User unblocked');
+  loadAdminUsers();
 }
 
 async function updateStatus(id, status) {
