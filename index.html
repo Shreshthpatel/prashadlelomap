@@ -815,7 +815,16 @@ select:focus-visible{
       <label class="lbl">Donation UPI ID *</label><input type="text" class="inp" placeholder="samiti@upi" id="a-upi" autocomplete="off" oninput="saveBhandaraDraftMemory()">
       <div class="wiz-memory">💾 Your UPI ID is stored locally on this device/browser and is not sent anywhere until you publish a Bhandara.</div>
       <div class="wiz-preview" id="wiz-preview"><div class="wiz-preview-hero"><div class="wiz-preview-emoji" id="prev-emoji">🍛</div><div class="wiz-preview-name" id="prev-name">Your Bhandara</div><div class="wiz-preview-org" id="prev-org">Your Samiti</div></div><div class="wiz-preview-body"><div class="wiz-preview-row"><b>📅 Date</b><span id="prev-date">–</span></div><div class="wiz-preview-row"><b>⏰ Time</b><span id="prev-time">–</span></div><div class="wiz-preview-row"><b>📍 Address</b><span id="prev-addr">–</span></div><div class="wiz-preview-row"><b>🍛 Menu</b><span id="prev-menu">–</span></div><div class="wiz-preview-row"><b>🎁 Sponsor</b><span id="prev-sp">–</span></div><div class="wiz-preview-row"><b>🤝 UPI</b><span id="prev-upi">–</span></div></div></div>
-      <button class="wiz-edit" type="button" onclick="openAddEdit()">✏️ Edit details</button><button class="wiz-jai" id="pub-btn" type="button" onclick="submitBhandara()">🙏 Jai Mata Di — Publish</button>
+      <button class="wiz-edit" type="button" onclick="toggleAddEdit()">✏️ Edit details</button>
+      <div id="wiz-edit-menu" style="display:none;background:var(--or-ll);border:1px solid var(--bd);border-radius:var(--rs);padding:.7rem;margin-bottom:.65rem">
+        <div style="font-size:.72rem;font-weight:700;color:var(--t3);margin-bottom:.5rem;text-transform:uppercase">Choose what to edit</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:.45rem">
+          <button class="wiz-small" type="button" onclick="editAddSection(2)">📝 Bhandara details</button>
+          <button class="wiz-small" type="button" onclick="editAddSection(3)">📍 Location</button>
+          <button class="wiz-small" type="button" onclick="editAddSection(4)">🤝 UPI</button>
+        </div>
+      </div>
+      <button class="wiz-jai" id="pub-btn" type="button" onclick="submitBhandara()">🙏 Jai Mata Di — Publish</button>
       <div class="note-sm" id="wiz-publish-note"></div><div class="wiz-nav single"><button class="wiz-back" type="button" onclick="prevAddStep()">← Back</button></div>
     </section>
   </div>
@@ -1501,7 +1510,8 @@ function validateAddStep(step){
 }
 function nextAddStep(){if(!validateAddStep(addWizardStep))return;if(addWizardStep<4){addWizardStep++;renderAddWizard()}}
 function prevAddStep(){if(addWizardStep>1){addWizardStep--;renderAddWizard()}}
-function openAddEdit(){const choice=prompt('Edit which section?\n\n1 = Bhandara details\n2 = Location\n3 = UPI\n\nEnter 1, 2 or 3');if(choice==='1')addWizardStep=2;else if(choice==='2')addWizardStep=3;else if(choice==='3')addWizardStep=4;else return;renderAddWizard()}
+function toggleAddEdit(){const m=document.getElementById('wiz-edit-menu');if(m)m.style.display=m.style.display==='none'?'block':'none'}
+function editAddSection(step){const m=document.getElementById('wiz-edit-menu');if(m)m.style.display='none';addWizardStep=step;renderAddWizard()}
 function saveBhandaraDraftMemory(){const upi=document.getElementById('a-upi')?.value.trim();if(upi)localStorage.setItem(ADD_UPI_KEY,upi)}
 function useLastBhandaraLocation(){try{const loc=JSON.parse(localStorage.getItem(ADD_LOC_KEY)||'null');if(!loc||!Number.isFinite(Number(loc.lat))||!Number.isFinite(Number(loc.lng))){toast('No previous location saved yet');return}pinLocation(Number(loc.lat),Number(loc.lng),loc.label||'Last saved location')}catch(e){toast('Could not restore the last location')}}
 function pinLocation(lat,lng,label){pinnedLatLng={lat,lng};if(!addMapInst)return;if(addMarker)addMarker.remove();addMarker=L.marker([lat,lng]).addTo(addMapInst);addMapInst.setView([lat,lng],15);const h=document.getElementById('pin-hint');h.textContent='✅ Pinned: '+lat.toFixed(5)+', '+lng.toFixed(5);h.classList.add('done');document.getElementById('pin-ok').textContent='✓';updateLocationText(label||'Selected location')}
