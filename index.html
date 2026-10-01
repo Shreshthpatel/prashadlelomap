@@ -350,6 +350,196 @@ body{background:var(--bg);color:var(--t);letter-spacing:-.01em}
   .admin-stats{gap:.8rem}
 }
 
+
+/* ── TEXT + BUTTON + TILE POLISH (UI ONLY) ── */
+body{
+  letter-spacing:-.005em;
+}
+button{
+  -webkit-tap-highlight-color:transparent;
+}
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible{
+  outline:3px solid rgba(232,98,10,.22);
+  outline-offset:2px;
+}
+.land-in{
+  width:min(100%,430px);
+}
+.land-h{
+  font-size:clamp(2.35rem,9vw,3rem);
+  letter-spacing:-.045em;
+  text-shadow:0 3px 18px rgba(0,0,0,.22);
+}
+.land-s{
+  font-size:.98rem;
+  line-height:1.55;
+  letter-spacing:.01em;
+}
+.land-c{
+  font-weight:600;
+  letter-spacing:.01em;
+  color:rgba(255,255,255,.48);
+}
+.btn-w,.btn-g,.bo,.btn-add,.btn-don,.btn-map{
+  min-height:48px;
+  font-weight:750;
+  letter-spacing:-.01em;
+}
+.btn-w{
+  box-shadow:0 10px 28px rgba(0,0,0,.24);
+}
+.btn-w:hover{
+  transform:translateY(-2px);
+  box-shadow:0 14px 32px rgba(0,0,0,.28);
+}
+.btn-g:hover{
+  background:rgba(255,255,255,.13);
+  border-color:rgba(255,255,255,.3);
+  transform:translateY(-1px);
+}
+.btn-g,.btn-map,.btn-approve,.btn-reject,.btn-block,.btn-unblock,.btn-del{
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease,border-color .16s ease;
+}
+.bo:hover,.btn-add:hover,.btn-don:hover,.btn-map:hover{
+  transform:translateY(-2px);
+}
+.btn-map:hover{
+  background:#F7FBFF;
+  box-shadow:0 7px 18px rgba(23,105,170,.12);
+}
+.btn-approve:hover,.btn-block:hover,.btn-unblock:hover,.btn-reject:hover,.btn-del:hover{
+  transform:translateY(-1px);
+}
+
+/* Public Bhandara tiles */
+.card-list{
+  gap:1rem;
+}
+.bc{
+  border:1px solid rgba(33,26,20,.08);
+  border-radius:18px;
+  box-shadow:0 8px 24px rgba(45,31,20,.07);
+  background:#fff;
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.bc:active{
+  transform:scale(.985);
+}
+.bc-body{
+  padding:1rem 1rem 1.05rem;
+}
+.bc-img{
+  min-height:112px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:3.15rem;
+}
+.bc-name{
+  font-size:1.02rem;
+  font-weight:800;
+  line-height:1.3;
+  letter-spacing:-.02em;
+}
+.bc-org{
+  margin-top:.28rem;
+  font-size:.8rem;
+  line-height:1.45;
+  color:var(--t2);
+}
+.tag-row{
+  gap:.4rem;
+}
+.tag{
+  font-weight:700;
+  letter-spacing:.005em;
+}
+
+/* Dashboard/admin tiles */
+.bh-row,.pending-card,.user-admin-card{
+  border:1px solid rgba(33,26,20,.08);
+  box-shadow:0 7px 20px rgba(45,31,20,.06);
+}
+.bh-row{
+  padding:1rem;
+  gap:.85rem;
+  border-radius:16px;
+}
+.bh-i{
+  width:46px;
+  height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:14px;
+  background:var(--or-l);
+  font-size:1.5rem;
+  flex-shrink:0;
+}
+.bh-n{
+  font-size:.96rem;
+  font-weight:800;
+  line-height:1.35;
+}
+.bh-t{
+  font-size:.77rem;
+  color:var(--t2);
+  margin-top:.18rem;
+}
+.pending-card{
+  border-radius:18px;
+}
+.pc-header{
+  padding:1rem 1.05rem .8rem;
+}
+.pc-name{
+  font-size:1rem;
+  font-weight:800;
+  letter-spacing:-.015em;
+}
+.pc-details{
+  padding:.85rem 1.05rem;
+}
+.pc-row{
+  padding:.25rem 0;
+  line-height:1.45;
+}
+.user-admin-card{
+  border-radius:16px;
+  padding:1rem;
+}
+
+/* Small text hierarchy */
+.note-sm,.empty-s,.land-note{
+  line-height:1.55;
+}
+.lbl{
+  font-weight:750;
+  letter-spacing:.005em;
+}
+.inp{
+  transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.inp:focus{
+  border-color:rgba(232,98,10,.55);
+  box-shadow:0 0 0 4px rgba(232,98,10,.09);
+}
+
+/* Desktop: cards feel like real tiles */
+@media(min-width:700px){
+  .card-list{
+    gap:1rem;
+  }
+  .bc:hover{
+    transform:translateY(-4px);
+    box-shadow:0 14px 34px rgba(45,31,20,.11);
+    border-color:rgba(232,98,10,.18);
+  }
+}
+
 </style>
 </head>
 <body>
