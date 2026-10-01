@@ -973,7 +973,7 @@ function requestUserLocation(showError = false, forceRefresh = false) {
     showUserLocation();
     renderNearbyChips();
     if (curScr === 's-bhakt') centerMainMapOnUser();
-    if (curScr === 's-add' && addMapInst) addMapInst.setView([userLocation.lat, userLocation.lng], 15);
+    if (curScr === 's-add' && addMapInst) { addMapInst.setView([userLocation.lat, userLocation.lng], 15); pinLocation(userLocation.lat,userLocation.lng,'My current location'); }
   }, () => {
     userLocationPending = false;
     if (showError) toast('Could not get your location; showing Jabalpur.');
