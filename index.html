@@ -573,6 +573,16 @@ select:focus-visible{
 .s-contact-h{font-size:.82rem;font-weight:800;color:var(--t);margin-bottom:.2rem}
 .s-contact-p{font-size:.75rem;color:var(--t3);line-height:1.5;margin-bottom:.65rem}
 .s-contact-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;padding:.68rem;background:#fff;border:1px solid rgba(232,98,10,.25);border-radius:10px;color:var(--or-d);font:700 .78rem Inter,sans-serif;text-decoration:none}
+
+/* ── ADD WIZARD ── */
+.wiz-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:1.1rem}.wiz-p{height:5px;border-radius:8px;background:var(--bd);transition:background .2s}.wiz-p.on{background:var(--or)}
+.wiz-title{font-size:1.2rem;font-weight:800;color:var(--t);margin-bottom:.25rem}.wiz-sub{font-size:.78rem;color:var(--t3);line-height:1.5;margin-bottom:1rem}.wiz-step{display:none;animation:fadeIn .2s ease}.wiz-step.on{display:block}
+.wiz-nav{display:grid;grid-template-columns:1fr 1.4fr;gap:.6rem;margin-top:1rem;padding-bottom:.5rem}.wiz-nav.single{grid-template-columns:1fr}.wiz-back{padding:.9rem;background:#fff;color:var(--t2);font-size:.9rem;font-weight:700;border:1.5px solid var(--bd);border-radius:var(--r);cursor:pointer;font-family:inherit}.wiz-next{padding:.9rem;background:var(--or);color:#fff;font-size:.9rem;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(232,98,10,.22)}
+.wiz-account{background:linear-gradient(135deg,var(--or-l),#fff);border:1px solid rgba(232,98,10,.15);border-radius:var(--r);padding:1rem;margin-bottom:.8rem}.wiz-account-row{display:flex;justify-content:space-between;gap:.7rem;padding:.42rem 0;border-bottom:1px solid rgba(232,98,10,.08);font-size:.82rem}.wiz-account-row:last-child{border-bottom:none}.wiz-account-row b{color:var(--t3);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}.wiz-account-row span{text-align:right;font-weight:600;color:var(--t)}.wiz-lock{font-size:.72rem;color:var(--gn);margin-top:.7rem;font-weight:600}.wiz-tip{background:var(--gld-l);border:1px solid rgba(200,146,10,.22);border-radius:var(--rs);padding:.75rem .9rem;font-size:.78rem;color:var(--t2);line-height:1.5;margin-bottom:1rem}
+.wiz-loc-actions{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.7rem}.wiz-small{padding:.7rem;background:#fff;color:var(--t2);font-size:.78rem;font-weight:700;border:1px solid var(--bd);border-radius:var(--rs);cursor:pointer;font-family:inherit}
+.wiz-preview{background:#fff;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:.8rem}.wiz-preview-hero{padding:1.1rem;text-align:center;background:linear-gradient(135deg,var(--or-l),#fff)}.wiz-preview-emoji{font-size:2.8rem}.wiz-preview-name{font-size:1.08rem;font-weight:800;margin-top:.25rem}.wiz-preview-org{font-size:.76rem;color:var(--t3);margin-top:.15rem}.wiz-preview-body{padding:.85rem 1rem}.wiz-preview-row{font-size:.78rem;padding:.38rem 0;border-bottom:1px solid var(--bd2);display:flex;gap:.5rem}.wiz-preview-row:last-child{border-bottom:none}.wiz-preview-row b{min-width:70px;color:var(--t3)}
+.wiz-edit{width:100%;padding:.82rem;background:#fff;color:var(--or);font-size:.88rem;font-weight:700;border:1.5px solid rgba(232,98,10,.35);border-radius:var(--r);cursor:pointer;font-family:inherit;margin-bottom:.65rem}.wiz-jai{width:100%;padding:1rem;background:var(--or);color:#fff;font-size:1rem;font-weight:800;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(232,98,10,.28)}.wiz-memory{font-size:.7rem;color:var(--gn);margin-top:.45rem;line-height:1.4}
+@media(min-width:700px){.ab{max-width:700px;width:100%;margin:0 auto}.wiz-preview{max-width:620px}}
 </style>
 </head>
 <body>
@@ -768,48 +778,46 @@ select:focus-visible{
 <div id="s-add" class="scr">
   <div class="tb"><button class="tb-bk" onclick="go('s-dash','back')">←</button><div class="tb-t">Add Bhandara</div></div>
   <div class="ab">
-    <div class="pending-notice" id="add-notice">⏳ Your Bhandara will be <strong>reviewed by admin</strong> before appearing on the map. Usually approved within a few hours.</div>
+    <div class="wiz-progress" aria-label="Bhandara listing progress"><div class="wiz-p on" id="wiz-p1"></div><div class="wiz-p" id="wiz-p2"></div><div class="wiz-p" id="wiz-p3"></div><div class="wiz-p" id="wiz-p4"></div></div>
     <div id="add-err" class="err"></div>
-    <label class="lbl">Bhandara Name *</label>
-    <input type="text" class="inp" placeholder="e.g. Shri Ram Maha Bhandara" id="a-name">
-    <label class="lbl">Samiti Name *</label>
-    <input type="text" class="inp" placeholder="e.g. Shri Ram Seva Samiti" id="a-samiti">
-    <label class="lbl">Pandal Address *</label>
-    <input type="text" class="inp" placeholder="Full address" id="a-addr">
-    <label class="lbl">Pin Location on Map * <span style="color:var(--gn);font-size:.72rem;font-weight:600" id="pin-ok"></span></label>
-    <div class="pin-map-wrap">
-      <div id="add-map"></div>
-      <button class="map-locate" type="button" onclick="requestUserLocation(true, true)" aria-label="Refresh and show my current location" title="Refresh and show my current location"><span aria-hidden="true">◎</span> My location</button>
-      <div class="pin-hint" id="pin-hint">👆 Tap map to drop your pin</div>
-    </div>
-    <div class="two-col">
-      <div><label class="lbl">Start Time *</label><input type="time" class="inp" value="12:00" id="a-start"></div>
-      <div><label class="lbl">End Time *</label><input type="time" class="inp" value="20:00" id="a-end"></div>
-    </div>
-    <label class="lbl">Date *</label>
-    <input type="date" class="inp" id="a-date">
-    <label class="lbl">Prasad / Menu</label>
-    <input type="text" class="inp" placeholder="e.g. Halwa Puri, Dal Chawal" id="a-menu">
-    <label class="lbl">Sponsored By</label>
-    <input type="text" class="inp" placeholder="Sponsor name (optional)" id="a-sp">
-    <label class="lbl">Samiti Mobile Number *</label>
-    <input type="tel" class="inp" placeholder="10-digit mobile number" maxlength="10" id="a-phone" autocomplete="tel">
-    <label class="lbl">Donation UPI ID *</label>
-    <input type="text" class="inp" placeholder="samiti@upi" id="a-upi" autocomplete="off">
-    <label class="lbl">Icon</label>
-    <select class="inp" id="a-emoji">
-      <option value="🍛">🍛 Bhandara / Food</option>
-      <option value="🌸">🌸 Puja</option>
-      <option value="🪷">🪷 Devi Mata</option>
-      <option value="🙏">🙏 Prayer</option>
-      <option value="🔱">🔱 Shiva</option>
-      <option value="🪔">🪔 Diya</option>
-      <option value="🕉️">🕉️ Om</option>
-    </select>
-    <label class="lbl">Message for Bhakts</label>
-    <textarea class="inp" rows="3" placeholder="All devotees are warmly welcome..." id="a-msg"></textarea>
-    <button class="bo" id="pub-btn" onclick="submitBhandara()">📨 Submit for Approval</button>
-    <div style="height:2rem"></div>
+    <section class="wiz-step on" id="wiz-step-1">
+      <div class="wiz-title">Samiti Details</div><div class="wiz-sub">Your account details are filled automatically. You don't need to type them again.</div>
+      <div class="wiz-account">
+        <div class="wiz-account-row"><b>Samiti</b><span id="wiz-samiti">–</span></div><div class="wiz-account-row"><b>Contact</b><span id="wiz-contact">–</span></div><div class="wiz-account-row"><b>Mobile</b><span id="wiz-phone">–</span></div><div class="wiz-account-row"><b>Area</b><span id="wiz-area">–</span></div><div class="wiz-account-row"><b>Email</b><span id="wiz-email">–</span></div>
+      </div>
+      <div class="wiz-lock">🔒 These details come from your Samiti account.</div>
+      <div class="wiz-tip" style="margin-top:1rem">Need to change your Samiti details? Update your profile first, then start the listing again.</div>
+      <div class="wiz-nav single"><button class="wiz-next" type="button" onclick="nextAddStep()">Continue →</button></div>
+    </section>
+    <section class="wiz-step" id="wiz-step-2">
+      <div class="wiz-title">Bhandara Details</div><div class="wiz-sub">Tell Bhakts what is being organised and when.</div>
+      <div class="pending-notice" id="add-notice">⏳ Your Bhandara will be reviewed by admin before appearing on the map.</div>
+      <label class="lbl">Bhandara Name *</label><input type="text" class="inp" placeholder="e.g. Shri Ram Maha Bhandara" id="a-name">
+      <label class="lbl">Pandal Address *</label><input type="text" class="inp" placeholder="Full address / landmark" id="a-addr">
+      <div class="two-col"><div><label class="lbl">Start Time *</label><input type="time" class="inp" value="12:00" id="a-start"></div><div><label class="lbl">End Time *</label><input type="time" class="inp" value="20:00" id="a-end"></div></div>
+      <label class="lbl">Date *</label><input type="date" class="inp" id="a-date">
+      <label class="lbl">Prasad / Menu</label><input type="text" class="inp" placeholder="e.g. Halwa Puri, Dal Chawal" id="a-menu">
+      <label class="lbl">Sponsored By</label><input type="text" class="inp" placeholder="Sponsor name (optional)" id="a-sp">
+      <label class="lbl">Icon</label><select class="inp" id="a-emoji"><option value="🍛">🍛 Bhandara / Food</option><option value="🌸">🌸 Puja</option><option value="🪷">🪷 Devi Mata</option><option value="🙏">🙏 Prayer</option><option value="🔱">🔱 Shiva</option><option value="🪔">🪔 Diya</option><option value="🕉️">🕉️ Om</option></select>
+      <label class="lbl">Message for Bhakts</label><textarea class="inp" rows="3" placeholder="All devotees are warmly welcome..." id="a-msg"></textarea>
+      <div class="wiz-nav"><button class="wiz-back" type="button" onclick="prevAddStep()">← Back</button><button class="wiz-next" type="button" onclick="nextAddStep()">Continue →</button></div>
+    </section>
+    <section class="wiz-step" id="wiz-step-3">
+      <div class="wiz-title">Pin the Location</div><div class="wiz-sub">Use your location for a quick pin, or tap anywhere on the map to adjust it.</div>
+      <div class="wiz-loc-actions"><button class="wiz-small" type="button" onclick="requestUserLocation(true,true)">📍 Use My Location</button><button class="wiz-small" type="button" onclick="useLastBhandaraLocation()">📌 Last Location</button></div>
+      <label class="lbl">Pandal Location * <span style="color:var(--gn);font-size:.72rem;font-weight:600" id="pin-ok"></span></label>
+      <div class="pin-map-wrap"><div id="add-map"></div><div class="pin-hint" id="pin-hint">👆 Tap map to drop your pin</div></div>
+      <div id="wiz-location-text" class="wiz-tip">No location selected yet.</div>
+      <div class="wiz-nav"><button class="wiz-back" type="button" onclick="prevAddStep()">← Back</button><button class="wiz-next" type="button" onclick="nextAddStep()">Continue →</button></div>
+    </section>
+    <section class="wiz-step" id="wiz-step-4">
+      <div class="wiz-title">UPI & Final Preview</div><div class="wiz-sub">Add your donation UPI once. This is saved only in this browser to make your next listing faster.</div>
+      <label class="lbl">Donation UPI ID *</label><input type="text" class="inp" placeholder="samiti@upi" id="a-upi" autocomplete="off" oninput="saveBhandaraDraftMemory()">
+      <div class="wiz-memory">💾 Your UPI ID is stored locally on this device/browser and is not sent anywhere until you publish a Bhandara.</div>
+      <div class="wiz-preview" id="wiz-preview"><div class="wiz-preview-hero"><div class="wiz-preview-emoji" id="prev-emoji">🍛</div><div class="wiz-preview-name" id="prev-name">Your Bhandara</div><div class="wiz-preview-org" id="prev-org">Your Samiti</div></div><div class="wiz-preview-body"><div class="wiz-preview-row"><b>📅 Date</b><span id="prev-date">–</span></div><div class="wiz-preview-row"><b>⏰ Time</b><span id="prev-time">–</span></div><div class="wiz-preview-row"><b>📍 Address</b><span id="prev-addr">–</span></div><div class="wiz-preview-row"><b>🍛 Menu</b><span id="prev-menu">–</span></div><div class="wiz-preview-row"><b>🎁 Sponsor</b><span id="prev-sp">–</span></div><div class="wiz-preview-row"><b>🤝 UPI</b><span id="prev-upi">–</span></div></div></div>
+      <button class="wiz-edit" type="button" onclick="openAddEdit()">✏️ Edit details</button><button class="wiz-jai" id="pub-btn" type="button" onclick="submitBhandara()">🙏 Jai Mata Di — Publish</button>
+      <div class="note-sm" id="wiz-publish-note"></div><div class="wiz-nav single"><button class="wiz-back" type="button" onclick="prevAddStep()">← Back</button></div>
+    </section>
   </div>
 </div>
 
@@ -879,7 +887,7 @@ function go(id, dir='forward') {
   prevScr = curScr; curScr = id;
   window.scrollTo(0, 0);
   if (id === 's-bhakt') { initMainMap(); loadBhaktView(); }
-  if (id === 's-add')   { updateAddMode(); setTimeout(initAddMap, 160); }
+  if (id === 's-add')   { startAddWizard(); }
   if (id === 's-dash')  { renderDash(); }
   if (id === 's-admin') { loadAdmin(); }
 }
@@ -911,15 +919,7 @@ function initAddMap() {
     addMapInst.setView([userLocation.lat, userLocation.lng], 15);
   }
   else requestUserLocation();
-  addMapInst.on('click', e => {
-    pinnedLatLng = e.latlng;
-    if (addMarker) addMarker.remove();
-    addMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(addMapInst);
-    const h = document.getElementById('pin-hint');
-    h.textContent = '✅ Pinned: ' + e.latlng.lat.toFixed(5) + ', ' + e.latlng.lng.toFixed(5);
-    h.classList.add('done');
-    document.getElementById('pin-ok').textContent = '✓';
-  });
+  addMapInst.on('click', e => { pinLocation(e.latlng.lat,e.latlng.lng,'Selected location'); });
 }
 function showUserLocation() {
   if (!userLocation) return;
@@ -1469,63 +1469,53 @@ async function updateStatus(id, status) {
 }
 
 // ── ADD BHANDARA ─────────────────────────────────────────────
-function updateAddMode() {
-  const verified = !!curMeta.verified;
-  const notice = document.getElementById('add-notice');
-  const btn = document.getElementById('pub-btn');
-  if (!notice || !btn) return;
-  notice.classList.toggle('verified', verified);
-  notice.innerHTML = verified
-    ? '✅ Your Samiti is <strong>Verified</strong>. New Bhandaras can be published immediately without admin approval.'
-    : '⏳ Your Bhandara will be <strong>reviewed by admin</strong> before appearing on the map. Usually approved within a few hours.';
-  btn.innerHTML = verified ? '🚀 Publish Bhandara' : '📨 Submit for Approval';
-}
-async function submitBhandara() {
-  const errEl=document.getElementById('add-err'); errEl.style.display='none';
-  const name   =document.getElementById('a-name').value.trim();
-  const samiti =document.getElementById('a-samiti').value.trim();
-  const addr   =document.getElementById('a-addr').value.trim();
-  const start  =document.getElementById('a-start').value;
-  const end    =document.getElementById('a-end').value;
-  const date   =document.getElementById('a-date').value;
-  const menu   =document.getElementById('a-menu').value.trim();
-  const sp     =document.getElementById('a-sp').value.trim();
-  const phone  =document.getElementById('a-phone').value.trim();
-  const upiId  =document.getElementById('a-upi').value.trim();
-  const emoji  =document.getElementById('a-emoji').value;
-  const msg    =document.getElementById('a-msg').value.trim();
-  if (!name||!samiti||!addr||!date||!phone||!upiId) { errEl.textContent='Please fill all required (*) fields, including Samiti Mobile Number and Donation UPI ID'; errEl.style.display='block'; return; }
-  if (!/^\\d{10}$/.test(phone)) { errEl.textContent='Enter a valid 10-digit Samiti mobile number'; errEl.style.display='block'; return; }
-  if (!pinnedLatLng) { errEl.textContent='Please tap the map to pin the location'; errEl.style.display='block'; return; }
-  if (upiId&&!/^[^\s@]+@[^\s@]+$/.test(upiId)) { errEl.textContent='Enter a valid UPI ID (for example, samiti@upi)'; errEl.style.display='block'; return; }
-  const btn=document.getElementById('pub-btn'); btn.disabled=true; btn.innerHTML='Submitting…';
-  try {
-    const { error } = await sb.from('bhandaras').insert({
-      name, samiti_name:samiti, samiti_phone:phone, address:addr, area:curMeta.area||'Jabalpur',
-      samiti_email: currentUser.email,
-      user_id:currentUser.id, lat:pinnedLatLng.lat, lng:pinnedLatLng.lng,
-      start_time:start, end_time:end, event_date:date,
-      menu, sponsor:sp, upi_id:upiId, emoji, message:msg,
-      status:curMeta.verified ? 'approved' : 'pending',
-      samiti_verified:!!curMeta.verified
-    });
-    if (error) throw error;
-  } catch (error) {
-    errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara'); errEl.style.display='block';
-    btn.disabled=false; btn.innerHTML=curMeta.verified ? '🚀 Publish Bhandara' : '📨 Submit for Approval'; return;
-  }
-  btn.disabled=false; btn.innerHTML='📨 Submit for Approval';
-  ['a-name','a-samiti','a-addr','a-menu','a-sp','a-phone','a-upi','a-msg'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('a-date').value='';
-  pinnedLatLng=null; if(addMarker){addMarker.remove();addMarker=null;}
-  document.getElementById('pin-hint').textContent='👆 Tap map to drop your pin';
-  document.getElementById('pin-hint').classList.remove('done');
-  document.getElementById('pin-ok').textContent='';
-  addMapInst=null;
-  toast(curMeta.verified ? '🚀 Bhandara published! It is now visible to bhakts.' : '📨 Submitted! Admin will review and approve shortly.');
-  go('s-dash','back');
-}
+let addWizardStep=1;
+const ADD_UPI_KEY='prashad_lelo_saved_upi_v1', ADD_LOC_KEY='prashad_lelo_last_location_v1';
 
+function updateAddMode(){
+  const verified=!!curMeta.verified, notice=document.getElementById('add-notice'), btn=document.getElementById('pub-btn');
+  if(!notice||!btn)return;
+  notice.classList.toggle('verified',verified);
+  notice.innerHTML=verified?'✅ Your Samiti is <strong>Verified</strong>. This Bhandara can be published immediately.':'⏳ This Bhandara will be <strong>reviewed by admin</strong> before appearing on the map.';
+  btn.innerHTML='🙏 Jai Mata Di — '+(verified?'Publish':'Submit for Approval');
+  document.getElementById('wiz-publish-note').textContent=verified?'Your verified Samiti can publish directly.':'After submission, admin will review the Bhandara before it becomes public.';
+}
+function startAddWizard(){
+  addWizardStep=1;document.getElementById('add-err').style.display='none';
+  document.getElementById('wiz-samiti').textContent=curMeta.samiti_name||'Samiti';
+  document.getElementById('wiz-contact').textContent=curMeta.full_name||currentUser?.email||'–';
+  document.getElementById('wiz-phone').textContent=curMeta.phone||'–';document.getElementById('wiz-area').textContent=curMeta.area||'Jabalpur';document.getElementById('wiz-email').textContent=currentUser?.email||curMeta.email||'–';
+  updateAddMode();const upi=localStorage.getItem(ADD_UPI_KEY);if(upi&&!document.getElementById('a-upi').value)document.getElementById('a-upi').value=upi;renderAddWizard();
+}
+function renderAddWizard(){
+  for(let i=1;i<=4;i++){document.getElementById('wiz-step-'+i).classList.toggle('on',i===addWizardStep);document.getElementById('wiz-p'+i).classList.toggle('on',i<=addWizardStep);}
+  if(addWizardStep===3)setTimeout(()=>{initAddMap();addMapInst?.invalidateSize();},60);
+  if(addWizardStep===4)updateAddPreview();window.scrollTo(0,0);
+}
+function validateAddStep(step){
+  const err=document.getElementById('add-err');err.style.display='none';
+  if(step===2){const name=document.getElementById('a-name').value.trim(),addr=document.getElementById('a-addr').value.trim(),date=document.getElementById('a-date').value,start=document.getElementById('a-start').value,end=document.getElementById('a-end').value;if(!name||!addr||!date||!start||!end){err.textContent='Please fill the required Bhandara details.';err.style.display='block';return false}if(end<=start){err.textContent='End time should be after start time.';err.style.display='block';return false}}
+  if(step===3&&!pinnedLatLng){err.textContent='Please select the Bhandara location on the map.';err.style.display='block';return false}
+  if(step===4){const upi=document.getElementById('a-upi').value.trim();if(!upi){err.textContent='Please enter the donation UPI ID.';err.style.display='block';return false}if(!/^[^\s@]+@[^\s@]+$/.test(upi)){err.textContent='Enter a valid UPI ID, for example samiti@upi.';err.style.display='block';return false}}
+  return true;
+}
+function nextAddStep(){if(!validateAddStep(addWizardStep))return;if(addWizardStep<4){addWizardStep++;renderAddWizard()}}
+function prevAddStep(){if(addWizardStep>1){addWizardStep--;renderAddWizard()}}
+function openAddEdit(){const choice=prompt('Edit which section?\n\n1 = Bhandara details\n2 = Location\n3 = UPI\n\nEnter 1, 2 or 3');if(choice==='1')addWizardStep=2;else if(choice==='2')addWizardStep=3;else if(choice==='3')addWizardStep=4;else return;renderAddWizard()}
+function saveBhandaraDraftMemory(){const upi=document.getElementById('a-upi')?.value.trim();if(upi)localStorage.setItem(ADD_UPI_KEY,upi)}
+function useLastBhandaraLocation(){try{const loc=JSON.parse(localStorage.getItem(ADD_LOC_KEY)||'null');if(!loc||!Number.isFinite(Number(loc.lat))||!Number.isFinite(Number(loc.lng))){toast('No previous location saved yet');return}pinLocation(Number(loc.lat),Number(loc.lng),loc.label||'Last saved location')}catch(e){toast('Could not restore the last location')}}
+function pinLocation(lat,lng,label){pinnedLatLng={lat,lng};if(!addMapInst)return;if(addMarker)addMarker.remove();addMarker=L.marker([lat,lng]).addTo(addMapInst);addMapInst.setView([lat,lng],15);const h=document.getElementById('pin-hint');h.textContent='✅ Pinned: '+lat.toFixed(5)+', '+lng.toFixed(5);h.classList.add('done');document.getElementById('pin-ok').textContent='✓';updateLocationText(label||'Selected location')}
+function updateLocationText(label){const el=document.getElementById('wiz-location-text');if(!el)return;if(!pinnedLatLng){el.textContent='No location selected yet.';return}el.textContent=(label||'Selected location')+' · '+Number(pinnedLatLng.lat).toFixed(5)+', '+Number(pinnedLatLng.lng).toFixed(5)}
+function updateAddPreview(){const v=id=>document.getElementById(id)?.value.trim()||'–';document.getElementById('prev-emoji').textContent=document.getElementById('a-emoji').value||'🍛';document.getElementById('prev-name').textContent=v('a-name')==='–'?'Your Bhandara':v('a-name');document.getElementById('prev-org').textContent=curMeta.samiti_name||'Your Samiti';document.getElementById('prev-date').textContent=v('a-date')==='–'?'–':fmtDate(v('a-date'));document.getElementById('prev-time').textContent=v('a-start')+' – '+v('a-end');document.getElementById('prev-addr').textContent=v('a-addr');document.getElementById('prev-menu').textContent=v('a-menu');document.getElementById('prev-sp').textContent=v('a-sp');document.getElementById('prev-upi').textContent=v('a-upi')}
+async function submitBhandara(){
+  const errEl=document.getElementById('add-err');errEl.style.display='none';if(!validateAddStep(2)||!validateAddStep(3)||!validateAddStep(4))return;
+  const name=document.getElementById('a-name').value.trim(),addr=document.getElementById('a-addr').value.trim(),start=document.getElementById('a-start').value,end=document.getElementById('a-end').value,date=document.getElementById('a-date').value,menu=document.getElementById('a-menu').value.trim(),sp=document.getElementById('a-sp').value.trim(),upiId=document.getElementById('a-upi').value.trim(),emoji=document.getElementById('a-emoji').value,msg=document.getElementById('a-msg').value.trim(),phone=String(curMeta.phone||'').trim();
+  if(!/^\d{10}$/.test(phone)){errEl.textContent='Your Samiti account does not have a valid 10-digit mobile number. Please update your profile.';errEl.style.display='block';addWizardStep=1;renderAddWizard();return}
+  const btn=document.getElementById('pub-btn');btn.disabled=true;btn.innerHTML='🙏 Jai Mata Di…';
+  try{const {error}=await sb.from('bhandaras').insert({name,samiti_name:curMeta.samiti_name||'Samiti',samiti_phone:phone,address:addr,area:curMeta.area||'Jabalpur',samiti_email:currentUser.email,user_id:currentUser.id,lat:pinnedLatLng.lat,lng:pinnedLatLng.lng,start_time:start,end_time:end,event_date:date,menu,sponsor:sp,upi_id:upiId,emoji,message:msg,status:curMeta.verified?'approved':'pending',samiti_verified:!!curMeta.verified});if(error)throw error}catch(error){errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara');errEl.style.display='block';btn.disabled=false;updateAddMode();return}
+  localStorage.setItem(ADD_UPI_KEY,upiId);localStorage.setItem(ADD_LOC_KEY,JSON.stringify({lat:Number(pinnedLatLng.lat),lng:Number(pinnedLatLng.lng),label:addr}));btn.disabled=false;updateAddMode();
+  ['a-name','a-addr','a-menu','a-sp','a-upi','a-msg'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});document.getElementById('a-date').value='';document.getElementById('a-start').value='12:00';document.getElementById('a-end').value='20:00';pinnedLatLng=null;if(addMarker){addMarker.remove();addMarker=null}document.getElementById('pin-hint').textContent='👆 Tap map to drop your pin';document.getElementById('pin-hint').classList.remove('done');document.getElementById('pin-ok').textContent='';addWizardStep=1;toast(curMeta.verified?'🙏 Jai Mata Di! Bhandara published.':'🙏 Jai Mata Di! Bhandara submitted for admin approval.');go('s-dash','back');
+}
 async function removeBhandara(id) {
   if (!isAdmin) { toast('Admin access required'); return; }
   if (!confirm('Remove this Bhandara?')) return;
