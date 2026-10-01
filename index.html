@@ -540,6 +540,14 @@ select:focus-visible{
   }
 }
 
+/* ── VERIFIED SAMITI UI ── */
+.ua-badges{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;margin-left:auto}
+.ua-status.verified{background:#FFFBEA;color:#8A5B00;border:1px solid rgba(200,146,10,.22)}
+.btn-verify{flex:1;padding:.65rem;background:#FFFBEA;color:#8A5B00;border:1.5px solid rgba(200,146,10,.35);border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-unverify{flex:1;padding:.65rem;background:var(--bd2);color:var(--t2);border:1.5px solid var(--bd);border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+.pending-notice.verified{background:var(--gn-l);border-color:rgba(26,122,62,.25);color:var(--gn)}
+.verified-badge{display:inline-flex;align-items:center;gap:3px;margin-left:.3rem;padding:3px 7px;border-radius:20px;background:#FFFBEA;color:#8A5B00;font-size:.67rem;font-weight:800;vertical-align:middle;white-space:nowrap}
+@media(min-width:520px){.ua-actions{display:grid;grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -683,6 +691,7 @@ select:focus-visible{
       <div style="flex:1;min-width:0">
         <div class="u-name" id="dash-name">–</div>
         <div class="u-email" id="dash-email">–</div>
+        <div id="dash-verified" style="margin-top:5px"></div>
       </div>
     </div>
     <div class="stat-g">
@@ -729,7 +738,7 @@ select:focus-visible{
 <div id="s-add" class="scr">
   <div class="tb"><button class="tb-bk" onclick="go('s-dash','back')">←</button><div class="tb-t">Add Bhandara</div></div>
   <div class="ab">
-    <div class="pending-notice">⏳ Your Bhandara will be <strong>reviewed by admin</strong> before appearing on the map. Usually approved within a few hours.</div>
+    <div class="pending-notice" id="add-notice">⏳ Your Bhandara will be <strong>reviewed by admin</strong> before appearing on the map. Usually approved within a few hours.</div>
     <div id="add-err" class="err"></div>
     <label class="lbl">Bhandara Name *</label>
     <input type="text" class="inp" placeholder="e.g. Shri Ram Maha Bhandara" id="a-name">
@@ -840,7 +849,7 @@ function go(id, dir='forward') {
   prevScr = curScr; curScr = id;
   window.scrollTo(0, 0);
   if (id === 's-bhakt') { initMainMap(); loadBhaktView(); }
-  if (id === 's-add')   { setTimeout(initAddMap, 160); }
+  if (id === 's-add')   { updateAddMode(); setTimeout(initAddMap, 160); }
   if (id === 's-dash')  { renderDash(); }
   if (id === 's-admin') { loadAdmin(); }
 }
@@ -965,9 +974,9 @@ function init() {
 }
 async function loadUserMeta() {
   if (!currentUser) return;
-  const { data } = await sb.from('samitis').select('id,user_id,samiti_name,full_name,phone,area,email,blocked').eq('user_id', currentUser.id).single();
+  const { data } = await sb.from('samitis').select('id,user_id,samiti_name,full_name,phone,area,email,blocked,verified').eq('user_id', currentUser.id).single();
   const metadata=currentUser.user_metadata||{};
-  curMeta = data || { samiti_name:metadata.samiti_name, full_name:metadata.full_name, phone:metadata.phone, area:metadata.area };
+  curMeta = data || { samiti_name:metadata.samiti_name, full_name:metadata.full_name, phone:metadata.phone, area:metadata.area, verified:false };
   if (data?.blocked) {
     await sb.auth.signOut();
     showErr('login-err','Your Samiti account is temporarily blocked by the administrator.');
@@ -1126,7 +1135,7 @@ async function loadBhaktView() {
     return;
   }
   const today=new Date().toISOString().split('T')[0];
-  const { data, error } = await sb.from('bhandaras').select('id,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,created_at').eq('status','approved').gte('event_date',today).order('event_date',{ascending:true});
+  const { data, error } = await sb.from('bhandaras').select('id,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('status','approved').gte('event_date',today).order('event_date',{ascending:true});
   if (error) {
     document.getElementById('chip-row').textContent='Could not load nearby Bhandaras.';
     document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not load Bhandaras</div><div class="empty-s">'+esc(error.message)+'</div></div>';
@@ -1157,7 +1166,7 @@ async function loadBhaktView() {
 
 // ── DETAIL ───────────────────────────────────────────────────
 async function openDetail(id) {
-  const {data}=await sb.from('bhandaras').select('id,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,created_at').eq('id',id).single();
+  const {data}=await sb.from('bhandaras').select('id,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('id',id).single();
   if (!data) { toast('Could not load details'); return; }
   curBhandara=data;
   document.getElementById('d-tb').textContent=data.name;
@@ -1188,6 +1197,7 @@ async function renderDash() {
   document.getElementById('dash-av').textContent=(curMeta.full_name||currentUser.email||'S').charAt(0).toUpperCase();
   document.getElementById('dash-name').textContent=curMeta.samiti_name||'Samiti';
   document.getElementById('dash-email').textContent=currentUser.email||'';
+  document.getElementById('dash-verified').innerHTML = curMeta.verified ? '<span class="verified-badge">✓ Verified Samiti</span>' : '';
   document.getElementById('admin-btn').style.display = isAdmin ? 'block':'none';
 
   const { data } = await sb.from('bhandaras').select('id,name,emoji,event_date,start_time,end_time,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});
@@ -1266,24 +1276,44 @@ async function loadAdminUsers() {
     const initial=esc((u.full_name||u.samiti_name||u.email||'S').charAt(0).toUpperCase());
     const status=u.blocked
       ? '<span class="ua-status blocked">BLOCKED</span>'
-      : '<span class="ua-status ok">ACTIVE</span>';
+      : u.verified
+        ? '<span class="ua-status verified">✓ VERIFIED</span>'
+        : '<span class="ua-status ok">ACTIVE</span>';
     return `<div class="user-admin-card">
       <div class="ua-head">
         <div class="ua-av">${initial}</div>
         <div style="flex:1;min-width:0"><div class="ua-name">${esc(u.samiti_name||'Samiti')}</div><div class="ua-email">${esc(u.email||'No email')}</div></div>
-        ${status}
+        <div class="ua-badges">${status}</div>
       </div>
       <div class="ua-row"><b>Name</b><span>${esc(u.full_name||'–')}</span></div>
       <div class="ua-row"><b>Phone</b><span>${esc(u.phone||'–')}</span></div>
       <div class="ua-row"><b>Area</b><span>${esc(u.area||'–')}</span></div>
       <div class="ua-row"><b>Joined</b><span>${u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN') : '–'}</span></div>
       <div class="ua-actions">
+        ${u.verified
+          ? `<button class="btn-unverify" onclick="setSamitiVerified('${u.user_id}',false)">✕ Remove verification</button>`
+          : `<button class="btn-verify" onclick="setSamitiVerified('${u.user_id}',true)">✓ Verify Samiti</button>`}
         ${u.blocked
           ? `<button class="btn-unblock" onclick="setUserBlocked('${u.user_id}',false)">🔓 Unblock user</button>`
           : `<button class="btn-block" onclick="setUserBlocked('${u.user_id}',true)">🚫 Temporarily block</button>`}
       </div>
     </div>`;
   }).join('') : '<div class="empty" style="padding:1.5rem"><div class="empty-s">No registered Samiti users yet.</div></div>';
+}
+
+async function setSamitiVerified(userId, verified) {
+  if (!isAdmin) { toast('Admin access required'); return; }
+  if (!confirm(verified ? 'Verify this Samiti?\n\nVerified Samitis can publish Bhandaras without admin approval.' : 'Remove verification from this Samiti?')) return;
+  const { error } = await sb.from('samitis').update({verified}).eq('user_id',userId);
+  if (error) { toast('Could not change verification: '+error.message); return; }
+  const { error: syncError } = await sb.from('bhandaras').update({samiti_verified:verified}).eq('user_id',userId);
+  if (currentUser?.id === userId) {
+    curMeta.verified = verified;
+    updateAddMode();
+    renderDash();
+  }
+  loadAdminUsers();
+  toast(syncError ? 'Samiti verification changed; badge sync failed for existing Bhandaras.' : (verified ? '✓ Samiti verified' : 'Samiti verification removed'));
 }
 
 async function setUserBlocked(userId, blocked) {
@@ -1304,6 +1334,17 @@ async function updateStatus(id, status) {
 }
 
 // ── ADD BHANDARA ─────────────────────────────────────────────
+function updateAddMode() {
+  const verified = !!curMeta.verified;
+  const notice = document.getElementById('add-notice');
+  const btn = document.getElementById('pub-btn');
+  if (!notice || !btn) return;
+  notice.classList.toggle('verified', verified);
+  notice.innerHTML = verified
+    ? '✅ Your Samiti is <strong>Verified</strong>. New Bhandaras can be published immediately without admin approval.'
+    : '⏳ Your Bhandara will be <strong>reviewed by admin</strong> before appearing on the map. Usually approved within a few hours.';
+  btn.innerHTML = verified ? '🚀 Publish Bhandara' : '📨 Submit for Approval';
+}
 async function submitBhandara() {
   const errEl=document.getElementById('add-err'); errEl.style.display='none';
   const name   =document.getElementById('a-name').value.trim();
@@ -1330,12 +1371,13 @@ async function submitBhandara() {
       user_id:currentUser.id, lat:pinnedLatLng.lat, lng:pinnedLatLng.lng,
       start_time:start, end_time:end, event_date:date,
       menu, sponsor:sp, upi_id:upiId, emoji, message:msg,
-      status:'pending'
+      status:curMeta.verified ? 'approved' : 'pending',
+      samiti_verified:!!curMeta.verified
     });
     if (error) throw error;
   } catch (error) {
     errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara'); errEl.style.display='block';
-    btn.disabled=false; btn.innerHTML='📨 Submit for Approval'; return;
+    btn.disabled=false; btn.innerHTML=curMeta.verified ? '🚀 Publish Bhandara' : '📨 Submit for Approval'; return;
   }
   btn.disabled=false; btn.innerHTML='📨 Submit for Approval';
   ['a-name','a-samiti','a-addr','a-menu','a-sp','a-phone','a-upi','a-msg'].forEach(i=>document.getElementById(i).value='');
@@ -1345,7 +1387,7 @@ async function submitBhandara() {
   document.getElementById('pin-hint').classList.remove('done');
   document.getElementById('pin-ok').textContent='';
   addMapInst=null;
-  toast('📨 Submitted! Admin will review and approve shortly.');
+  toast(curMeta.verified ? '🚀 Bhandara published! It is now visible to bhakts.' : '📨 Submitted! Admin will review and approve shortly.');
   go('s-dash','back');
 }
 
