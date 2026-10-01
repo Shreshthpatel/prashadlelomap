@@ -1403,7 +1403,7 @@ async function loadAdmin(loadUsers=true) {
 
 async function loadAdminUsers() {
   if (!isAdmin) return;
-  const { data, error } = await sb.from('samitis').select('id,user_id,samiti_name,full_name,phone,area,email,created_at,blocked').order('created_at',{ascending:false});
+  const { data, error } = await sb.from('samitis').select('id,user_id,samiti_name,full_name,phone,area,email,created_at,blocked,verified').order('created_at',{ascending:false});
   const box=document.getElementById('admin-users');
   if (error) { box.innerHTML='<div class="empty" style="padding:1.5rem"><div class="empty-s">Could not load users: '+esc(error.message)+'</div></div>'; return; }
   const users=data||[];
