@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prashad Lelo Jabalpur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --or:#E8620A;--or-d:#C4510A;--or-l:#FFF3E8;--or-ll:#FFF8F3;
+  --gld:#C8920A;--gld-l:#FFFBEA;
+  --gn:#1A7A3E;--gn-l:#E8F5EE;
+  --cr:#B52B20;--cr-l:#FEF2F2;
+  --pu:#6B21A8;--pu-l:#F5F0FF;
+  --bg:#FAFAF8;--wh:#fff;
+  --t:#18140C;--t2:#5C4A28;--t3:#9C845A;
+  --bd:#EDE7DC;--bd2:#F5F0EA;
+  --r:16px;--rs:12px;
+  --shadow:0 4px 24px rgba(232,98,10,.10);
+  --shadow-sm:0 2px 12px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden}
+#app{position:relative;overflow:hidden;min-height:100vh}
+
+/* ── TRANSITIONS ── */
+.scr{
+  display:flex;flex-direction:column;min-height:100vh;
+  position:absolute;inset:0;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s cubic-bezier(.4,0,.2,1),transform .3s cubic-bezier(.4,0,.2,1);
+  transform:translateX(30px);will-change:transform,opacity;
+}
+.scr.on{opacity:1;pointer-events:all;transform:translateX(0);position:relative}
+.scr.exit{opacity:0;transform:translateX(-30px);position:absolute;pointer-events:none}
+.scr.from-back{transform:translateX(-30px)}
+.scr.from-back.on{transform:translateX(0)}
+
+/* ── LANDING ── */
+#s-land{background:#1A0A00;align-items:center;justify-content:center;text-align:center;padding:2.5rem 1.5rem;overflow:hidden}
+#s-land::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 35%,rgba(232,98,10,.6) 0%,transparent 68%)}
+.land-in{position:relative;z-index:2;max-width:380px;width:100%}
+.land-rings{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(232,98,10,.12);top:50%;left:50%;transform:translate(-50%,-50%);animation:ripple 4s ease-out infinite}
+.ring:nth-child(2){animation-delay:1.3s}.ring:nth-child(3){animation-delay:2.6s}
+@keyframes ripple{0%{width:60px;height:60px;opacity:.8}100%{width:600px;height:600px;opacity:0}}
+.flame{font-size:4.5rem;margin-bottom:.6rem;display:block;filter:drop-shadow(0 0 32px rgba(232,98,10,.8));animation:flicker 2.5s ease-in-out infinite alternate}
+@keyframes flicker{0%{filter:drop-shadow(0 0 24px rgba(232,98,10,.7))}100%{filter:drop-shadow(0 0 44px rgba(255,150,50,.95))}}
+.land-h{font-size:2.5rem;font-weight:800;color:#fff;line-height:1.1;margin-bottom:.35rem;letter-spacing:-.03em}
+.land-s{font-size:.95rem;color:rgba(255,255,255,.55);margin-bottom:.3rem}
+.land-c{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;color:rgba(255,255,255,.3);margin-bottom:2.5rem;background:rgba(255,255,255,.06);padding:5px 12px;border-radius:20px}
+.land-div{width:40px;height:1.5px;background:rgba(232,98,10,.5);margin:0 auto 2rem}
+.btn-w{display:flex;align-items:center;justify-content:center;gap:.6rem;width:100%;padding:1rem 1.2rem;background:#fff;color:var(--t);font-size:.95rem;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;margin-bottom:.75rem;font-family:inherit;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 20px rgba(0,0,0,.18)}
+.btn-w:active{transform:scale(.97)}
+.btn-g{display:block;width:100%;padding:.95rem;background:rgba(255,255,255,.09);color:#fff;font-size:.93rem;font-weight:500;border:1.5px solid rgba(255,255,255,.18);border-radius:var(--r);cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-g:active{background:rgba(255,255,255,.16)}
+.land-note{font-size:.73rem;color:rgba(255,255,255,.28);margin-top:1.2rem;line-height:1.7}
+.site-footer{font-size:.68rem;color:rgba(255,255,255,.32);margin-top:2rem;letter-spacing:.01em}
+
+/* ── TOPBAR ── */
+.tb{background:var(--or);color:#fff;padding:.85rem 1.1rem;display:flex;align-items:center;gap:.6rem;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(232,98,10,.28)}
+.tb-bk{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1rem;cursor:pointer;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.tb-bk:active{background:rgba(255,255,255,.28)}
+.tb-t{font-size:1rem;font-weight:700;flex:1;letter-spacing:-.01em}
+.tb-b{font-size:.72rem;background:rgba(255,255,255,.18);padding:5px 10px;border-radius:20px;white-space:nowrap;border:none;color:#fff;cursor:pointer;font-family:inherit;transition:background .15s}
+.tb-b:active{background:rgba(255,255,255,.28)}
+.tb-admin{background:rgba(255,255,255,.25);font-weight:700}
+
+/* ── FORMS ── */
+.ab{padding:1.4rem;flex:1;overflow-y:auto}
+.tabs-row{display:grid;grid-template-columns:1fr 1fr;border-radius:var(--rs);overflow:hidden;border:1px solid var(--bd);margin-bottom:1.4rem;background:var(--bd2);padding:4px;gap:4px}
+.tab{padding:.68rem;background:transparent;color:var(--t3);font-size:.88rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;border-radius:9px;transition:background .2s,color .2s,box-shadow .2s}
+.tab.on{background:#fff;color:var(--or);box-shadow:var(--shadow-sm)}
+.lbl{font-size:.72rem;font-weight:700;color:var(--t3);display:block;margin-bottom:.3rem;letter-spacing:.05em;text-transform:uppercase}
+.inp{width:100%;padding:.82rem .9rem;border:1.5px solid var(--bd);border-radius:var(--rs);font-size:.95rem;background:#fff;color:var(--t);margin-bottom:.82rem;font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+.inp:focus{border-color:var(--or);box-shadow:0 0 0 3px rgba(232,98,10,.1)}
+textarea.inp{resize:none}
+select.inp{cursor:pointer}
+.bo{width:100%;padding:.95rem;background:var(--or);color:#fff;font-size:.95rem;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 16px rgba(232,98,10,.3)}
+.bo:active{transform:scale(.98)}
+.bo:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.note-sm{font-size:.8rem;color:var(--t3);text-align:center;margin-top:.7rem;line-height:1.5}
+.err{background:var(--cr-l);border:1px solid #F09595;border-radius:var(--rs);padding:.75rem 1rem;font-size:.83rem;color:var(--cr);margin-bottom:.85rem;display:none;animation:fadeIn .2s}
+.succ{background:var(--gn-l);border:1px solid rgba(26,122,62,.25);border-radius:var(--rs);padding:.75rem 1rem;font-size:.83rem;color:var(--gn);margin-bottom:.85rem;display:none;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.pass-wrap{position:relative}
+.pass-wrap .inp{padding-right:2.8rem;margin-bottom:.82rem}
+.eye-btn{position:absolute;right:.75rem;top:50%;transform:translateY(-60%);background:none;border:none;cursor:pointer;color:var(--t3);font-size:1rem;padding:4px}
+.link-btn{background:none;border:none;color:var(--or);font-size:.82rem;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px;padding:0;font-weight:600}
+
+/* ── BHAKT ── */
+.near-s{padding:1rem 1.1rem .5rem}
+.slbl{font-size:.7rem;font-weight:700;color:var(--or);letter-spacing:.09em;text-transform:uppercase;margin-bottom:.72rem}
+.chip-row{display:flex;gap:.55rem;overflow-x:auto;padding-bottom:.5rem;scrollbar-width:none}
+.chip-row::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;background:#fff;border:1px solid var(--bd);border-radius:50px;padding:.45rem .9rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .15s}
+.chip:active{border-color:var(--or)}
+.cdot{width:7px;height:7px;border-radius:50%;background:var(--gn);flex-shrink:0;animation:pulse 2s infinite}
+.cdot.s{background:var(--gld);animation:none}
+.cn{font-size:.8rem;font-weight:600;color:var(--t)}
+.cd{font-size:.7rem;color:var(--t3)}
+
+/* ── MAP ── */
+.map-wrap{margin:.6rem 1.1rem;border-radius:var(--r);overflow:hidden;border:1px solid var(--bd);height:280px;position:relative;box-shadow:var(--shadow-sm)}
+#map,#add-map{width:100%;height:100%}
+.leaflet-container{background:#e8ede0!important}
+.map-locate{position:absolute;top:10px;left:10px;z-index:600;min-height:38px;padding:0 .7rem;border:1px solid var(--bd);border-radius:8px;background:#fff;color:#1877F2;font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:.35rem;cursor:pointer;box-shadow:var(--shadow-sm)}
+.map-locate:active{background:var(--or-l)}
+.user-location-dot{width:16px;height:16px;border:3px solid #fff;border-radius:50%;background:#1877F2;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.map-leg{position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,.95);border-radius:10px;padding:7px 11px;font-size:.7rem;color:var(--t2);z-index:500;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow-sm);border:1px solid var(--bd)}
+.lr{display:flex;align-items:center;gap:5px}
+.ld{width:8px;height:8px;border-radius:50%}
+
+/* ── CARDS ── */
+.card-list{padding:0 1.1rem 5rem;display:flex;flex-direction:column;gap:.6rem}
+.bc{background:#fff;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;box-shadow:var(--shadow-sm)}
+.bc:active{transform:scale(.985)}
+.bc-img{width:100%;height:88px;display:flex;align-items:center;justify-content:center;font-size:2.6rem}
+.bc-body{padding:.85rem .95rem}
+.bc-name{font-size:.97rem;font-weight:700;color:var(--t);margin-bottom:.15rem;letter-spacing:-.01em}
+.bc-org{font-size:.78rem;color:var(--t3);margin-bottom:.5rem}
+.tag-row{display:flex;gap:.4rem;flex-wrap:wrap}
+.tag{font-size:.7rem;padding:3px 8px;border-radius:20px;font-weight:600;display:inline-flex;align-items:center;gap:3px}
+.t-live{background:var(--gn-l);color:var(--gn)}
+.t-or{background:var(--or-ll);color:var(--or-d)}
+.t-gld{background:var(--gld-l);color:#7A5200}
+.t-pu{background:var(--pu-l);color:var(--pu)}
+.t-cr{background:var(--cr-l);color:var(--cr)}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--gn);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.empty{text-align:center;padding:3.5rem 1.5rem;color:var(--t3)}
+.empty-i{font-size:3rem;margin-bottom:.75rem;display:block}
+.empty-h{font-size:1rem;font-weight:600;color:var(--t2);margin-bottom:.4rem}
+.empty-s{font-size:.85rem;line-height:1.6}
+
+/* ── DETAIL ── */
+#s-dtl{background:var(--bg)}
+.dtl-hero{width:100%;height:200px;display:flex;align-items:center;justify-content:center}
+.dtl-emoji{font-size:5.5rem;filter:drop-shadow(0 4px 16px rgba(0,0,0,.15))}
+.dtl-body{padding:1.25rem;overflow-y:auto;flex:1}
+.dtl-name{font-size:1.4rem;font-weight:800;color:var(--t);margin-bottom:.15rem;letter-spacing:-.03em}
+.dtl-org{font-size:.85rem;color:var(--t3);margin-bottom:1.2rem}
+.info-rows{border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:1rem;background:#fff;box-shadow:var(--shadow-sm)}
+.ir{display:flex;align-items:flex-start;gap:.75rem;padding:.88rem 1rem;border-bottom:1px solid var(--bd2)}
+.ir:last-child{border-bottom:none}
+.ir-i{font-size:1.15rem;flex-shrink:0;margin-top:1px}
+.ir-l{font-size:.67rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.ir-v{font-size:.9rem;color:var(--t);font-weight:500;line-height:1.4}
+.dtl-msg{background:var(--gld-l);border:1px solid rgba(200,146,10,.22);border-radius:var(--rs);padding:1rem;margin-bottom:1.2rem;font-size:.88rem;color:var(--t2);line-height:1.7;font-style:italic}
+.btn-don{width:100%;padding:1rem;background:var(--or);color:#fff;font-size:1rem;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;box-shadow:0 6px 20px rgba(232,98,10,.32);transition:transform .15s}
+.btn-don:active{transform:scale(.98)}
+.btn-map{width:100%;padding:.85rem;background:#fff;color:#1769AA;font-size:.92rem;font-weight:700;border:1.5px solid #B8D8F0;border-radius:var(--r);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.65rem;transition:background .15s,transform .15s}
+.btn-map:active{background:#EFF8FF;transform:scale(.98)}
+
+/* ── DASHBOARD ── */
+.user-card{background:linear-gradient(135deg,var(--or-l),#fff);border:1px solid rgba(232,98,10,.15);border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.9rem;box-shadow:var(--shadow-sm)}
+.u-av{width:46px;height:46px;border-radius:50%;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 3px 10px rgba(232,98,10,.3)}
+.u-name{font-size:.95rem;font-weight:700;color:var(--t);letter-spacing:-.01em}
+.u-email{font-size:.76rem;color:var(--t3);margin-top:1px}
+.stat-g{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem}
+.sc{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:.95rem 1rem;box-shadow:var(--shadow-sm)}
+.sc-l{font-size:.7rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem}
+.sc-n{font-size:2rem;font-weight:800;color:var(--or);line-height:1;margin-bottom:2px}
+.sc-s{font-size:.74rem;color:var(--t3)}
+.btn-add{width:100%;padding:.95rem;background:var(--or);color:#fff;font-size:.92rem;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:1rem;box-shadow:0 4px 16px rgba(232,98,10,.28);transition:transform .15s}
+.btn-add:active{transform:scale(.98)}
+.bh-row{background:#fff;border:1px solid var(--bd);border-radius:var(--rs);padding:.85rem 1rem;margin-bottom:.55rem;display:flex;align-items:center;gap:.72rem;box-shadow:var(--shadow-sm)}
+.bh-i{font-size:1.4rem}
+.bh-n{font-size:.88rem;font-weight:600;color:var(--t)}
+.bh-t{font-size:.74rem;color:var(--t3);margin-top:1px}
+.btn-del{background:none;border:1px solid #F09595;color:var(--cr);border-radius:8px;padding:5px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:background .15s}
+.btn-del:active{background:var(--cr-l)}
+
+/* ── ADMIN DASHBOARD ── */
+#s-admin{background:var(--bg)}
+.admin-tb{background:#1A0A00}
+.admin-header{background:linear-gradient(135deg,#1A0A00,#3A1A00);padding:1.2rem 1.1rem .9rem;margin-bottom:1rem}
+.admin-h{font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.2rem}
+.admin-s{font-size:.8rem;color:rgba(255,255,255,.5)}
+.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem}
+.asc{background:#fff;border:1px solid var(--bd);border-radius:var(--rs);padding:.75rem .8rem;text-align:center;box-shadow:var(--shadow-sm)}
+.asc-n{font-size:1.5rem;font-weight:800;color:var(--or)}
+.asc-l{font-size:.68rem;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.pending-card{background:#fff;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:.75rem;box-shadow:var(--shadow-sm)}
+.pc-header{padding:.9rem 1rem .7rem;border-bottom:1px solid var(--bd2)}
+.pc-name{font-size:.97rem;font-weight:700;color:var(--t);margin-bottom:.1rem}
+.pc-samiti{font-size:.78rem;color:var(--t3);margin-bottom:.5rem}
+.pc-details{display:flex;flex-direction:column;gap:.3rem;padding:.75rem 1rem;background:var(--bd2)}
+.pc-row{font-size:.8rem;color:var(--t2);display:flex;gap:.5rem}
+.pc-row span:first-child{color:var(--t3);font-weight:600;min-width:60px}
+.pc-actions{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;padding:.8rem 1rem}
+.btn-approve{padding:.75rem;background:var(--gn);color:#fff;font-size:.88rem;font-weight:700;border:none;border-radius:var(--rs);cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn-approve:active{opacity:.85}
+.btn-reject{padding:.75rem;background:var(--cr-l);color:var(--cr);font-size:.88rem;font-weight:700;border:1.5px solid #F09595;border-radius:var(--rs);cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-reject:active{background:#FEE2E2}
+.admin-section{font-size:.72rem;font-weight:700;color:var(--or);letter-spacing:.09em;text-transform:uppercase;margin-bottom:.65rem;margin-top:.25rem}
+.user-admin-card{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:.65rem;box-shadow:var(--shadow-sm)}
+.ua-head{display:flex;align-items:center;gap:.7rem;margin-bottom:.55rem}
+.ua-av{width:38px;height:38px;border-radius:50%;background:var(--or);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.ua-name{font-size:.9rem;font-weight:700;color:var(--t)}
+.ua-email{font-size:.74rem;color:var(--t3);margin-top:2px}
+.ua-row{font-size:.78rem;color:var(--t2);display:flex;gap:.45rem;margin-top:.3rem}
+.ua-row b{color:var(--t3);min-width:58px}
+.ua-actions{display:flex;gap:.5rem;margin-top:.7rem}
+.btn-block{flex:1;padding:.65rem;background:var(--cr-l);color:var(--cr);border:1.5px solid #F09595;border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-unblock{flex:1;padding:.65rem;background:var(--gn-l);color:var(--gn);border:1.5px solid rgba(26,122,62,.25);border-radius:var(--rs);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+.ua-status{font-size:.68rem;font-weight:700;padding:3px 7px;border-radius:20px;margin-left:auto}
+.ua-status.ok{background:var(--gn-l);color:var(--gn)}
+.ua-status.blocked{background:var(--cr-l);color:var(--cr)}
+
+/* ── ADD ── */
+.pin-map-wrap{border-radius:var(--rs);overflow:hidden;border:1.5px solid var(--bd);height:220px;margin-bottom:.85rem;position:relative;box-shadow:var(--shadow-sm)}
+.pin-hint{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.93);border-radius:20px;padding:6px 13px;font-size:.76rem;font-weight:600;color:var(--t2);z-index:500;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow-sm);border:1px solid var(--bd);transition:background .2s,color .2s}
+.pin-hint.done{background:var(--gn-l);color:var(--gn);border-color:rgba(26,122,62,.25)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.pending-notice{background:var(--gld-l);border:1px solid rgba(200,146,10,.3);border-radius:var(--rs);padding:.85rem 1rem;font-size:.83rem;color:var(--t2);margin-bottom:1rem;line-height:1.55}
+
+/* ── MAP PINS ── */
+.mpin{width:34px;height:34px;background:var(--or);color:#fff;font-size:1.05rem;border-radius:50%;box-shadow:0 3px 10px rgba(232,98,10,.35);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.9);cursor:pointer}
+.mpin.upcoming{background:var(--gld)}
+
+/* ── DONATE ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.ov.on{display:flex;animation:fadeIn .2s}
+.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:1.5rem;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sh{width:38px;height:3.5px;background:var(--bd);border-radius:2px;margin:0 auto 1.2rem}
+.s-t{font-size:1.1rem;font-weight:700;color:var(--t);margin-bottom:.2rem}
+.s-s{font-size:.82rem;color:var(--t3);margin-bottom:1.2rem}
+.amt-g{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.9rem}
+.ab2{padding:.72rem;border:1.5px solid var(--bd);border-radius:10px;background:#fff;font-size:.88rem;font-weight:600;color:var(--t);cursor:pointer;font-family:inherit;transition:all .15s}
+.ab2.sel{border-color:var(--or);background:var(--or-l);color:var(--or)}
+.upi-n{font-size:.76rem;color:var(--t3);text-align:center;margin-top:.55rem}
+.don-qr-wrap{display:none;text-align:center;margin:0 auto 1rem}
+.don-qr{width:176px;height:176px;object-fit:contain;border:1px solid var(--bd);border-radius:var(--rs);padding:6px;background:#fff}
+.don-upi{font-size:.8rem;color:var(--t2);margin-top:.45rem;word-break:break-word}
+.btn-cx{width:100%;margin-top:.65rem;padding:.6rem;background:none;border:none;color:var(--t3);cursor:pointer;font-family:inherit;font-size:.88rem}
+
+/* ── LOADER ── */
+.loader{display:flex;align-items:center;justify-content:center;padding:3rem;gap:.5rem}
+.ldsp{width:8px;height:8px;border-radius:50%;background:var(--or);animation:ld .7s infinite alternate}
+.ldsp:nth-child(2){animation-delay:.18s}.ldsp:nth-child(3){animation-delay:.36s}
+@keyframes ld{0%{opacity:.25;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:#1A0A00;color:#fff;font-size:.85rem;font-weight:500;padding:.7rem 1.3rem;border-radius:30px;z-index:999;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ============================================================
+   PRASHAD LELO — PROFESSIONAL UI OVERLAY
+   UI-only: no application logic or data requests changed.
+   ============================================================ */
+:root{
+  --or:#E56A16;
+  --or-d:#B94D0B;
+  --or-l:#FFF1E6;
+  --or-ll:#FFF8F3;
+  --gld:#B9850B;
+  --gld-l:#FFF8DC;
+  --gn:#167A3D;
+  --gn-l:#EAF7EF;
+  --cr:#B42318;
+  --cr-l:#FEF3F2;
+  --pu:#6941C6;
+  --pu-l:#F4F0FF;
+  --bg:#F7F5F1;
+  --wh:#FFFFFF;
+  --t:#211A14;
+  --t2:#655548;
+  --t3:#948578;
+  --bd:#E9E1D8;
+  --bd2:#F3EEE8;
+  --r:18px;
+  --rs:13px;
+  --shadow:0 10px 30px rgba(49,32,18,.08);
+  --shadow-sm:0 4px 16px rgba(49,32,18,.06);
+}
+body{background:var(--bg);color:var(--t);letter-spacing:-.01em}
+.scr{transition:opacity .24s ease,transform .24s ease}
+.tb{background:rgba(229,106,22,.96);backdrop-filter:blur(14px);box-shadow:0 4px 20px rgba(92,43,12,.16);padding:.72rem 1rem}
+.tb-bk{width:38px;height:38px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.16)}
+.tb-t{font-size:1.02rem;letter-spacing:-.025em}
+.tb-b{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.14);padding:6px 11px}
+.ab{padding:1.15rem 1rem 2rem;max-width:760px;width:100%;margin:0 auto}
+.lbl{color:var(--t2);font-size:.68rem;letter-spacing:.08em}
+.inp{background:#fff;border-color:#E5DDD4;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 2px rgba(0,0,0,.02)}
+.inp:focus{border-color:var(--or);box-shadow:0 0 0 4px rgba(229,106,22,.10)}
+.bo,.btn-add,.btn-don{background:linear-gradient(135deg,#E56A16,#C9530D);border-radius:14px;box-shadow:0 8px 22px rgba(201,83,13,.22)}
+.bo:hover,.btn-add:hover,.btn-don:hover{filter:brightness(1.03);transform:translateY(-1px)}
+.tabs-row{background:#EEE9E2;border:none;border-radius:14px;padding:4px}
+.tab{border-radius:10px}
+.tab.on{box-shadow:0 3px 10px rgba(48,34,20,.08)}
+.near-s{padding:1rem 1rem .55rem}
+.slbl,.admin-section{color:var(--or-d)}
+.chip{border-color:#E7DED5;box-shadow:0 3px 12px rgba(48,34,20,.05);padding:.5rem .9rem}
+.map-wrap{margin:.55rem 1rem;border:none;border-radius:20px;box-shadow:var(--shadow);height:290px}
+.map-locate{border:none;border-radius:11px;box-shadow:0 5px 16px rgba(0,0,0,.12)}
+.map-leg{border:none;box-shadow:0 5px 16px rgba(0,0,0,.10);border-radius:12px}
+.card-list{padding:0 1rem 5rem;gap:.75rem}
+.bc{border:1px solid #E9E1D8;border-radius:18px;box-shadow:var(--shadow-sm)}
+.bc:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.bc-img{height:104px}
+.bc-body{padding:1rem}
+.bc-name{font-size:1rem}
+.tag{border-radius:999px;padding:4px 9px}
+.empty{background:rgba(255,255,255,.62);border:1px dashed #DED4C9;border-radius:18px;margin:0 1rem}
+#s-dtl{background:var(--bg)}
+.dtl-hero{height:225px;position:relative}
+.dtl-hero:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(33,26,20,.10))}
+.dtl-emoji{position:relative;z-index:1;font-size:6rem}
+.dtl-body{padding:1.15rem 1rem 2rem;max-width:760px;width:100%;margin:0 auto}
+.dtl-name{font-size:1.55rem}
+.info-rows{border:none;box-shadow:var(--shadow-sm);border-radius:18px}
+.ir{padding:.95rem 1rem}
+.dtl-msg{border:none;box-shadow:var(--shadow-sm);border-radius:15px}
+.btn-map{border:1px solid #CFE0EC;border-radius:14px;background:#fff}
+.user-card{border:none;box-shadow:var(--shadow);background:linear-gradient(135deg,#FFF1E6,#fff)}
+.stat-g{gap:.8rem}
+.sc{border:none;box-shadow:var(--shadow-sm);border-radius:17px}
+.sc-n{font-size:2.15rem}
+.bh-row,.pending-card,.user-admin-card{border:none;box-shadow:var(--shadow-sm);border-radius:16px}
+.bh-row{padding:.95rem 1rem}
+.admin-tb{background:#20130B}
+.admin-header{background:linear-gradient(135deg,#20130B,#4A2109);padding:1.35rem 1rem 1rem}
+.admin-h{font-size:1.2rem}
+.asc{border:none;box-shadow:var(--shadow-sm);border-radius:15px}
+.asc-n{font-size:1.65rem}
+.pc-header{padding:1rem}
+.pc-details{background:#F8F5F1;padding:.85rem 1rem}
+.pc-actions{padding:.8rem 1rem}
+.btn-approve,.btn-reject,.btn-block,.btn-unblock{border-radius:12px}
+.ua-head{margin-bottom:.7rem}
+.pin-map-wrap{border:none;border-radius:16px;box-shadow:var(--shadow-sm)}
+.pin-hint{border:none;box-shadow:0 4px 14px rgba(0,0,0,.10)}
+.sheet{border-radius:24px 24px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.12)}
+#s-land{background:radial-gradient(circle at 50% 35%,#7A3008 0%,#321406 45%,#160803 100%)}
+#s-land::before{background:radial-gradient(ellipse at 50% 28%,rgba(240,112,27,.42),transparent 62%)}
+.land-in{max-width:400px}
+.land-h{font-size:2.65rem;letter-spacing:-.045em}
+.land-s{color:rgba(255,255,255,.64)}
+.btn-w{border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,.22)}
+.btn-g{border-radius:16px;background:rgba(255,255,255,.08)}
+@media(min-width:700px){
+  .land-in{max-width:430px}
+  .map-wrap{height:360px}
+  .card-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .bc{height:100%}
+  .admin-stats{gap:.8rem}
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LANDING -->
+<div id="s-land" class="scr on">
+  <div class="land-rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+  <div class="land-in">
+    <span class="flame">🪔</span>
+    <div class="land-h">Prashad Lelo</div>
+    <div class="land-s">Seva · Bhakti · Annadaan · Jabalpur</div>
+    <div class="land-c">📍 Jabalpur, Madhya Pradesh</div>
+    <div class="land-div"></div>
+    <button class="btn-w" onclick="go('s-auth')">🏛️ Samiti Login / Register</button>
+    <button class="btn-g" onclick="go('s-bhakt')">Browse as Bhakt (no login)</button>
+    <div class="land-note">Samitis list Bhandaras after login.<br>Bhakts can browse without any account.</div>
+    <div class="site-footer">Developed by Shreshth Patel</div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div id="s-auth" class="scr">
+  <div class="tb"><button class="tb-bk" onclick="go('s-land','back')">←</button><div class="tb-t">Samiti Portal</div></div>
+  <div class="ab">
+    <div class="tabs-row">
+      <button class="tab on" id="tab-l-btn" onclick="switchTab('login')">Login</button>
+      <button class="tab" id="tab-r-btn" onclick="switchTab('register')">Register</button>
+    </div>
+    <div id="t-login">
+      <div id="login-err" class="err"></div>
+      <div id="login-ok" class="succ"></div>
+      <label class="lbl">Email Address</label>
+      <input type="email" class="inp" placeholder="samiti@email.com" id="l-email" autocomplete="email">
+      <label class="lbl">Password</label>
+      <div class="pass-wrap">
+        <input type="password" class="inp" placeholder="Enter password" id="l-pass" autocomplete="current-password">
+        <button class="eye-btn" onclick="togglePass('l-pass',this)" tabindex="-1">👁</button>
+      </div>
+      <div style="text-align:right;margin-top:-.4rem;margin-bottom:.9rem">
+        <button class="link-btn" onclick="showForgot()">Forgot password?</button>
+      </div>
+      <button class="bo" id="login-btn" onclick="doLogin()">Login to Dashboard</button>
+      <div class="note-sm">New samiti? <button class="link-btn" onclick="switchTab('register')">Register here</button></div>
+    </div>
+    <div id="t-reg" style="display:none">
+      <div id="reg-err" class="err"></div>
+      <div id="reg-ok" class="succ"></div>
+      <label class="lbl">Samiti / Organisation Name</label>
+      <input type="text" class="inp" placeholder="e.g. Shri Ram Seva Samiti" id="r-sname">
+      <label class="lbl">Your Name</label>
+      <input type="text" class="inp" placeholder="Full name" id="r-name">
+      <label class="lbl">Mobile Number</label>
+      <input type="tel" class="inp" placeholder="10-digit mobile" maxlength="10" id="r-phone">
+      <label class="lbl">Area / Locality</label>
+      <input type="text" class="inp" placeholder="e.g. Rani Tal, Jabalpur" id="r-area">
+      <label class="lbl">Email Address</label>
+      <input type="email" class="inp" placeholder="samiti@email.com" id="r-email" autocomplete="email">
+      <label class="lbl">Password</label>
+      <div class="pass-wrap">
+        <input type="password" class="inp" placeholder="Min 6 characters" id="r-pass" autocomplete="new-password">
+        <button class="eye-btn" onclick="togglePass('r-pass',this)" tabindex="-1">👁</button>
+      </div>
+      <label class="lbl">Confirm Password</label>
+      <div class="pass-wrap">
+        <input type="password" class="inp" placeholder="Repeat password" id="r-pass2" autocomplete="new-password">
+        <button class="eye-btn" onclick="togglePass('r-pass2',this)" tabindex="-1">👁</button>
+      </div>
+      <button class="bo" id="reg-btn" onclick="doRegister()">Create Account</button>
+      <div class="note-sm">Already registered? <button class="link-btn" onclick="switchTab('login')">Login here</button></div>
+    </div>
+    <div id="t-forgot" style="display:none">
+      <div id="forgot-err" class="err"></div>
+      <div id="forgot-ok" class="succ"></div>
+      <div style="text-align:center;margin-bottom:1.3rem">
+        <div style="font-size:2.8rem;margin-bottom:.5rem">🔑</div>
+        <div style="font-size:.9rem;color:var(--t2);line-height:1.6">Enter your email and we'll send a password reset link</div>
+      </div>
+      <label class="lbl">Email Address</label>
+      <input type="email" class="inp" placeholder="samiti@email.com" id="f-email">
+      <button class="bo" onclick="doForgot()">Send Reset Link</button>
+      <div class="note-sm"><button class="link-btn" onclick="hideForgot()">← Back to Login</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- BHAKT HOME -->
+<div id="s-bhakt" class="scr">
+  <div class="tb">
+    <button class="tb-bk" onclick="go('s-land','back')">←</button>
+    <div class="tb-t">🪔 Prashad Lelo Jabalpur</div>
+    <div class="tb-b">Jabalpur</div>
+  </div>
+  <div class="near-s">
+    <div class="slbl">📍 Nearby Bhandaras</div>
+    <div class="chip-row" id="chip-row"><div style="font-size:.8rem;color:var(--t3);padding:.4rem 0">Loading...</div></div>
+  </div>
+  <div class="map-wrap">
+    <div id="map"></div>
+    <button class="map-locate" type="button" onclick="requestUserLocation(true, true)" aria-label="Refresh and show my current location" title="Refresh and show my current location"><span aria-hidden="true">◎</span> My location</button>
+    <div class="map-leg">
+      <div class="lr"><div class="ld" style="background:var(--or)"></div> Live now</div>
+      <div class="lr"><div class="ld" style="background:var(--gld)"></div> Upcoming</div>
+      <div class="lr"><div class="ld" style="background:#1877F2"></div> You are here</div>
+    </div>
+  </div>
+  <div style="height:.75rem"></div>
+  <div style="padding:0 1.1rem .5rem"><div class="slbl">All Bhandaras</div></div>
+  <div class="card-list" id="bhakt-list">
+    <div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div id="s-dtl" class="scr">
+  <div class="tb"><button class="tb-bk" onclick="goBack()">←</button><div class="tb-t" id="d-tb">Bhandara Details</div></div>
+  <div style="overflow-y:auto;flex:1">
+    <div class="dtl-hero" id="d-hero"><div class="dtl-emoji" id="d-emoji">🪔</div></div>
+    <div class="dtl-body">
+      <div class="dtl-name" id="d-name"></div>
+      <div class="dtl-org" id="d-org"></div>
+      <div class="info-rows">
+        <div class="ir"><div class="ir-i">📍</div><div><div class="ir-l">Location</div><div class="ir-v" id="d-loc"></div></div></div>
+        <div class="ir"><div class="ir-i">⏰</div><div><div class="ir-l">Timing</div><div class="ir-v" id="d-time"></div></div></div>
+        <div class="ir"><div class="ir-i">🌟</div><div><div class="ir-l">Sponsored By</div><div class="ir-v" id="d-sp"></div></div></div>
+        <div class="ir"><div class="ir-i">🍽️</div><div><div class="ir-l">Prasad / Menu</div><div class="ir-v" id="d-menu"></div></div></div>
+      </div>
+      <div class="dtl-msg" id="d-msg"></div>
+      <button class="btn-map" id="d-map-btn" onclick="openGoogleMaps()">📍 Open location in Google Maps</button>
+      <button class="btn-don" onclick="openDonate()">🤝 Sahyog Karein — Donate</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAMITI DASHBOARD -->
+<div id="s-dash" class="scr">
+  <div class="tb"><button class="tb-bk" onclick="go('s-land','back')">←</button><div class="tb-t">My Dashboard</div><button class="tb-b" id="admin-btn" onclick="go('s-admin')" style="display:none">⚙️ Admin</button><button class="tb-b" onclick="doLogout()" style="margin-left:.4rem">Sign Out</button></div>
+  <div class="ab">
+    <div class="user-card">
+      <div class="u-av" id="dash-av">🏛</div>
+      <div style="flex:1;min-width:0">
+        <div class="u-name" id="dash-name">–</div>
+        <div class="u-email" id="dash-email">–</div>
+      </div>
+    </div>
+    <div class="stat-g">
+      <div class="sc"><div class="sc-l">My Bhandaras</div><div class="sc-n" id="stat-total">0</div><div class="sc-s">Total listed</div></div>
+      <div class="sc"><div class="sc-l">Active Now</div><div class="sc-n" style="color:var(--gn)" id="stat-live">0</div><div class="sc-s">Live</div></div>
+    </div>
+    <button class="btn-add" onclick="go('s-add')">➕ Add New Bhandara</button>
+    <div class="slbl" style="margin-bottom:.65rem">My Bhandaras</div>
+    <div id="dash-list"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="s-admin" class="scr">
+  <div class="tb admin-tb"><button class="tb-bk" onclick="go('s-dash','back')">←</button><div class="tb-t">⚙️ Admin Panel</div><div class="tb-b tb-admin">ADMIN</div></div>
+  <div style="overflow-y:auto;flex:1">
+    <div class="admin-header">
+      <div class="admin-h">Prashad Lelo Admin</div>
+      <div class="admin-s">Review and approve Bhandara listings</div>
+    </div>
+    <div class="ab" style="padding-top:0">
+      <div class="admin-stats">
+        <div class="asc"><div class="asc-n" id="a-total">0</div><div class="asc-l">Total</div></div>
+        <div class="asc"><div class="asc-n" style="color:#C8920A" id="a-pending">0</div><div class="asc-l">Pending</div></div>
+        <div class="asc"><div class="asc-n" style="color:var(--gn)" id="a-approved">0</div><div class="asc-l">Approved</div></div>
+      </div>
+
+      <div class="admin-section">👥 Samiti Users</div>
+      <div id="admin-users"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
+
+      <div class="admin-section" style="margin-top:1.2rem">⏳ Pending Approval</div>
+      <div id="admin-pending"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
+
+      <div class="admin-section" style="margin-top:1.2rem">✅ Approved</div>
+      <div id="admin-approved"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
+
+      <div class="admin-section" style="margin-top:1.2rem">❌ Rejected</div>
+      <div id="admin-rejected"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD BHANDARA -->
+<div id="s-add" class="scr">
+  <div class="tb"><button class="tb-bk" onclick="go('s-dash','back')">←</button><div class="tb-t">Add Bhandara</div></div>
+  <div class="ab">
+    <div class="pending-notice">⏳ Your Bhandara will be <strong>reviewed by admin</strong> before appearing on the map. Usually approved within a few hours.</div>
+    <div id="add-err" class="err"></div>
+    <label class="lbl">Bhandara Name *</label>
+    <input type="text" class="inp" placeholder="e.g. Shri Ram Maha Bhandara" id="a-name">
+    <label class="lbl">Samiti Name *</label>
+    <input type="text" class="inp" placeholder="e.g. Shri Ram Seva Samiti" id="a-samiti">
+    <label class="lbl">Pandal Address *</label>
+    <input type="text" class="inp" placeholder="Full address" id="a-addr">
+    <label class="lbl">Pin Location on Map * <span style="color:var(--gn);font-size:.72rem;font-weight:600" id="pin-ok"></span></label>
+    <div class="pin-map-wrap">
+      <div id="add-map"></div>
+      <button class="map-locate" type="button" onclick="requestUserLocation(true, true)" aria-label="Refresh and show my current location" title="Refresh and show my current location"><span aria-hidden="true">◎</span> My location</button>
+      <div class="pin-hint" id="pin-hint">👆 Tap map to drop your pin</div>
+    </div>
+    <div class="two-col">
+      <div><label class="lbl">Start Time *</label><input type="time" class="inp" value="12:00" id="a-start"></div>
+      <div><label class="lbl">End Time *</label><input type="time" class="inp" value="20:00" id="a-end"></div>
+    </div>
+    <label class="lbl">Date *</label>
+    <input type="date" class="inp" id="a-date">
+    <label class="lbl">Prasad / Menu</label>
+    <input type="text" class="inp" placeholder="e.g. Halwa Puri, Dal Chawal" id="a-menu">
+    <label class="lbl">Sponsored By</label>
+    <input type="text" class="inp" placeholder="Sponsor name (optional)" id="a-sp">
+    <label class="lbl">Samiti Mobile Number *</label>
+    <input type="tel" class="inp" placeholder="10-digit mobile number" maxlength="10" id="a-phone" autocomplete="tel">
+    <label class="lbl">Donation UPI ID *</label>
+    <input type="text" class="inp" placeholder="samiti@upi" id="a-upi" autocomplete="off">
+    <label class="lbl">Icon</label>
+    <select class="inp" id="a-emoji">
+      <option value="🍛">🍛 Bhandara / Food</option>
+      <option value="🌸">🌸 Puja</option>
+      <option value="🪷">🪷 Devi Mata</option>
+      <option value="🙏">🙏 Prayer</option>
+      <option value="🔱">🔱 Shiva</option>
+      <option value="🪔">🪔 Diya</option>
+      <option value="🕉️">🕉️ Om</option>
+    </select>
+    <label class="lbl">Message for Bhakts</label>
+    <textarea class="inp" rows="3" placeholder="All devotees are warmly welcome..." id="a-msg"></textarea>
+    <button class="bo" id="pub-btn" onclick="submitBhandara()">📨 Submit for Approval</button>
+    <div style="height:2rem"></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- DONATE -->
+<div class="ov" id="don-ov">
+  <div class="sheet">
+    <div class="sh"></div>
+    <div class="s-t">🤝 Sahyog Karein</div>
+    <div class="s-s" id="don-org">Support this Bhandara</div>
+    <div class="amt-g">
+      <button class="ab2" onclick="sAmt(this,51)">₹51</button>
+      <button class="ab2 sel" onclick="sAmt(this,101)">₹101</button>
+      <button class="ab2" onclick="sAmt(this,251)">₹251</button>
+      <button class="ab2" onclick="sAmt(this,501)">₹501</button>
+      <button class="ab2" onclick="sAmt(this,1001)">₹1,001</button>
+      <button class="ab2" onclick="sAmt(this,0)">Other</button>
+    </div>
+    <input type="tel" class="inp" placeholder="Or enter custom amount" id="c-amt" style="margin-bottom:.8rem">
+    <div class="don-upi" id="don-upi"></div>
+    <button class="bo" id="don-pay-btn" onclick="payNow()">Pay via UPI</button>
+    <div class="upi-n" id="don-pay-note">Google Pay · PhonePe · Paytm · Any UPI</div>
+    <button class="btn-cx" onclick="closeDon()">Cancel</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+<script>
+const SUPA_URL = 'https://rhlzctubpaypoepyebta.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJobHpjdHVicGF5cG9lcHllYnRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1MTUzMzUsImV4cCI6MjEwNjA5MTMzNX0.ZMc6GM7q56N8sKVB7PtqnS-I9dnXmZ16p5rwJsZO4XQ';
+
+let sb = null, currentUser = null, curMeta = {}, isAdmin = false;
+let curScr = 's-land', prevScr = 's-land';
+let curBhandara = null, selAmtVal = 101;
+let mainMap = null, addMapInst = null, pinnedLatLng = null, addMarker = null;
+let mainUserMarker = null, addUserMarker = null, userLocation = null, userLocationPending = false;
+let mapMarkers = [], bhandaraItems = [], bhaktLoadedAt = 0;
+
+// ── TOAST ────────────────────────────────────────────────────
+let toastT;
+function toast(msg, dur=2800) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ── NAV ──────────────────────────────────────────────────────
+function go(id, dir='forward') {
+  if (id === curScr) return;
+  const from = document.getElementById(curScr);
+  const to   = document.getElementById(id);
+  to.classList.remove('exit','from-back');
+  if (dir === 'back') to.classList.add('from-back');
+  from.classList.add('exit');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    to.classList.add('on');
+    from.addEventListener('transitionend', () => {
+      from.classList.remove('on','exit');
+      to.classList.remove('from-back');
+    }, { once: true });
+  }));
+  prevScr = curScr; curScr = id;
+  window.scrollTo(0, 0);
+  if (id === 's-bhakt') { initMainMap(); loadBhaktView(); }
+  if (id === 's-add')   { setTimeout(initAddMap, 160); }
+  if (id === 's-dash')  { renderDash(); }
+  if (id === 's-admin') { loadAdmin(); }
+}
+function goBack() { go(prevScr === curScr ? 's-bhakt' : prevScr, 'back'); }
+
+// ── MAP ──────────────────────────────────────────────────────
+function tileLayer() {
+  return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    subdomains: 'abc', maxZoom: 19
+  });
+}
+function initMainMap() {
+  if (mainMap) { setTimeout(() => mainMap.invalidateSize(), 200); return; }
+  mainMap = L.map('map').setView([23.1815, 79.9864], 13);
+  tileLayer().addTo(mainMap);
+  if (userLocation) {
+    showUserLocation();
+    centerMainMapOnUser();
+  }
+  else requestUserLocation();
+}
+function initAddMap() {
+  if (addMapInst) { addMapInst.invalidateSize(); return; }
+  addMapInst = L.map('add-map').setView([23.1815, 79.9864], 14);
+  tileLayer().addTo(addMapInst);
+  if (userLocation) {
+    showUserLocation();
+    addMapInst.setView([userLocation.lat, userLocation.lng], 15);
+  }
+  else requestUserLocation();
+  addMapInst.on('click', e => {
+    pinnedLatLng = e.latlng;
+    if (addMarker) addMarker.remove();
+    addMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(addMapInst);
+    const h = document.getElementById('pin-hint');
+    h.textContent = '✅ Pinned: ' + e.latlng.lat.toFixed(5) + ', ' + e.latlng.lng.toFixed(5);
+    h.classList.add('done');
+    document.getElementById('pin-ok').textContent = '✓';
+  });
+}
+function showUserLocation() {
+  if (!userLocation) return;
+  const point = [userLocation.lat, userLocation.lng];
+  const icon = L.divIcon({ html: '<div class="user-location-dot"></div>', className: '', iconSize: [16, 16], iconAnchor: [8, 8] });
+  if (mainMap) {
+    if (mainUserMarker) mainUserMarker.remove();
+    mainUserMarker = L.marker(point, { icon, zIndexOffset: 1000, keyboard: false }).addTo(mainMap).bindTooltip('You are here');
+  }
+  if (addMapInst) {
+    if (addUserMarker) addUserMarker.remove();
+    addUserMarker = L.marker(point, { icon, zIndexOffset: 1000, keyboard: false }).addTo(addMapInst).bindTooltip('You are here');
+  }
+}
+function centerMainMapOnUser() {
+  if (!mainMap || !userLocation) return;
+  const nearest = bhandaraItems
+    .filter(b => b.lat != null && b.lng != null && Number.isFinite(Number(b.lat)) && Number.isFinite(Number(b.lng)))
+    .map(b => ({ b, distance: distanceKm(userLocation, b) }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 5);
+  if (!nearest.length) { mainMap.setView([userLocation.lat, userLocation.lng], 14); return; }
+  const points = [[userLocation.lat, userLocation.lng], ...nearest.map(({ b }) => [Number(b.lat), Number(b.lng)])];
+  mainMap.fitBounds(points, { padding: [24, 24], maxZoom: 14 });
+}
+function requestUserLocation(showError = false, forceRefresh = false) {
+  if (userLocation && !forceRefresh) {
+    showUserLocation();
+    if (curScr === 's-bhakt') centerMainMapOnUser();
+    if (curScr === 's-add' && addMapInst) addMapInst.setView([userLocation.lat, userLocation.lng], 15);
+    return;
+  }
+  if (!navigator.geolocation) {
+    if (showError) toast('Location is unavailable; showing Jabalpur.');
+    return;
+  }
+  if (userLocationPending) return;
+  userLocationPending = true;
+  navigator.geolocation.getCurrentPosition(position => {
+    userLocationPending = false;
+    userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+    showUserLocation();
+    renderNearbyChips();
+    if (curScr === 's-bhakt') centerMainMapOnUser();
+    if (curScr === 's-add' && addMapInst) addMapInst.setView([userLocation.lat, userLocation.lng], 15);
+  }, () => {
+    userLocationPending = false;
+    if (showError) toast('Could not get your location; showing Jabalpur.');
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: forceRefresh ? 0 : 60000 });
+}
+function updateMapMarkers(items) {
+  if (!mainMap) return;
+  mapMarkers.forEach(m => m.remove()); mapMarkers = [];
+  items.forEach(b => {
+    if (!b.lat || !b.lng) return;
+    const icon = L.divIcon({
+      html: `<div class="mpin ${isLive(b)?'':'upcoming'}">${b.emoji||'🪔'}</div>`,
+      className: '',
+      iconSize: [34, 34],
+      iconAnchor: [17, 17]
+    });
+    const m = L.marker([b.lat, b.lng], { icon }).addTo(mainMap);
+    m.on('click', () => openDetail(b.id));
+    mapMarkers.push(m);
+  });
+}
+
+// ── SUPABASE ─────────────────────────────────────────────────
+function init() {
+  sb = supabase.createClient(SUPA_URL, SUPA_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'prashad-lelo-jabalpur-auth' } });
+  sb.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user || null;
+    if (currentUser && (curScr === 's-land' || curScr === 's-auth')) {
+      loadUserMeta().then(ok => { if (ok) go('s-dash'); });
+    }
+    if (!currentUser && curScr === 's-dash') go('s-land', 'back');
+  });
+  sb.auth.getSession().then(({ data }) => {
+    currentUser = data?.session?.user || null;
+    if (currentUser && curScr === 's-land') loadUserMeta().then(ok => { if (ok) go('s-dash'); });
+  });
+}
+async function loadUserMeta() {
+  if (!currentUser) return;
+  const { data } = await sb.from('samitis').select('id,user_id,samiti_name,full_name,phone,area,email,blocked').eq('user_id', currentUser.id).single();
+  const metadata=currentUser.user_metadata||{};
+  curMeta = data || { samiti_name:metadata.samiti_name, full_name:metadata.full_name, phone:metadata.phone, area:metadata.area };
+  if (data?.blocked) {
+    await sb.auth.signOut();
+    showErr('login-err','Your Samiti account is temporarily blocked by the administrator.');
+    return false;
+  }
+  const { data: adminRow } = await sb.from('admins').select('id').eq('email', currentUser.email).maybeSingle();
+  isAdmin = !!adminRow;
+  return true;
+}
+
+// ── TABS & AUTH UI ───────────────────────────────────────────
+function switchTab(t) {
+  document.getElementById('t-login').style.display   = t==='login'    ? 'block':'none';
+  document.getElementById('t-reg').style.display     = t==='register' ? 'block':'none';
+  document.getElementById('t-forgot').style.display  = 'none';
+  document.getElementById('tab-l-btn').classList.toggle('on', t==='login');
+  document.getElementById('tab-r-btn').classList.toggle('on', t==='register');
+}
+function showForgot() { document.getElementById('t-login').style.display='none'; document.getElementById('t-forgot').style.display='block'; }
+function hideForgot() { document.getElementById('t-forgot').style.display='none'; document.getElementById('t-login').style.display='block'; }
+function togglePass(id, btn) { const el=document.getElementById(id); el.type=el.type==='password'?'text':'password'; btn.textContent=el.type==='password'?'👁':'🙈'; }
+function showErr(id, msg) { const e=document.getElementById(id); e.textContent=msg; e.style.display='block'; }
+function showOk(id, msg)  { const e=document.getElementById(id); e.textContent=msg; e.style.display='block'; }
+function hideMsg(id) { document.getElementById(id).style.display='none'; }
+function setBtnLoad(id, loading, label) { const b=document.getElementById(id); b.disabled=loading; b.innerHTML=loading?'<span style="opacity:.7">Please wait…</span>':label; }
+
+async function doRegister() {
+  hideMsg('reg-err'); hideMsg('reg-ok');
+  const sname=document.getElementById('r-sname').value.trim();
+  const name =document.getElementById('r-name').value.trim();
+  const phone=document.getElementById('r-phone').value.trim();
+  const area =document.getElementById('r-area').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pass =document.getElementById('r-pass').value;
+  const pass2=document.getElementById('r-pass2').value;
+  if (!sname||!name||!phone||!area||!email||!pass) { showErr('reg-err','Please fill in all fields'); return; }
+  if (phone.length!==10) { showErr('reg-err','Enter a valid 10-digit mobile number'); return; }
+  if (pass.length<6) { showErr('reg-err','Password must be at least 6 characters'); return; }
+  if (pass!==pass2) { showErr('reg-err','Passwords do not match'); return; }
+  setBtnLoad('reg-btn', true, '');
+  try {
+    const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { samiti_name: sname, full_name: name, phone, area } } });
+    if (error) { showErr('reg-err', error.message); return; }
+    if (!data?.user) { showErr('reg-err','Supabase did not return a new account. Please try again.'); return; }
+    if (!data.session) {
+      switchTab('login');
+      showOk('login-ok','✅ Account created. Account created. You can log in now..');
+      return;
+    }
+    const { error: profileError } = await sb.from('samitis').insert({ user_id: data.user.id, samiti_name: sname, full_name: name, phone, area, email });
+    if (profileError) {
+      showErr('reg-err','Account created, but saving the samiti profile failed: '+profileError.message);
+      return;
+    }
+  } catch (error) {
+    showErr('reg-err','Could not complete registration: '+(error?.message||'Check your connection and try again.'));
+  } finally {
+    setBtnLoad('reg-btn', false, 'Create Account');
+  }
+}
+
+async function doLogin() {
+  hideMsg('login-err'); hideMsg('login-ok');
+  const email=document.getElementById('l-email').value.trim();
+  const pass =document.getElementById('l-pass').value;
+  if (!email||!pass) { showErr('login-err','Please enter email and password'); return; }
+  setBtnLoad('login-btn', true, '');
+  try {
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) {
+      showErr('login-err', error.message.includes('Invalid login')?'Incorrect email or password':error.message);
+    } else {
+      const allowed = await loadUserMeta();
+      if (!allowed) return;
+      go('s-dash');
+    }
+  } catch (error) {
+    showErr('login-err','Could not log in: '+(error?.message||'Check your connection and try again.'));
+  } finally {
+    setBtnLoad('login-btn', false, 'Login to Dashboard');
+  }
+}
+
+async function doForgot() {
+  const email=document.getElementById('f-email').value.trim();
+  if (!email) { showErr('forgot-err','Please enter your email'); return; }
+  await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  showOk('forgot-ok','✅ Reset link sent! Check your email.');
+}
+
+async function doLogout() { await sb.auth.signOut(); currentUser=null; curMeta={}; isAdmin=false; go('s-land','back'); }
+
+// ── DATA HELPERS ─────────────────────────────────────────────
+function isLive(b) {
+  if (!b.event_date||!b.start_time||!b.end_time) return false;
+  const now=Date.now(), s=new Date(b.event_date+'T'+b.start_time).getTime(), e=new Date(b.event_date+'T'+b.end_time).getTime();
+  return now>=s&&now<=e;
+}
+function distanceKm(from, to) {
+  const rad = degrees => degrees * Math.PI / 180;
+  const lat1 = rad(from.lat), lat2 = rad(Number(to.lat));
+  const dLat = lat2 - lat1, dLng = rad(Number(to.lng) - from.lng);
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function renderNearbyChips() {
+  const row = document.getElementById('chip-row');
+  if (!row) return;
+  if (!bhandaraItems.length) {
+    row.innerHTML = '<div style="font-size:.8rem;color:var(--t3);padding:.4rem 0">No bhandaras yet</div>';
+    return;
+  }
+  const sorted = [...bhandaraItems].sort((a, b) => {
+    if (!userLocation) return new Date(a.event_date) - new Date(b.event_date);
+    const aHasLocation = a.lat != null && a.lng != null;
+    const bHasLocation = b.lat != null && b.lng != null;
+    if (aHasLocation && bHasLocation) return distanceKm(userLocation, a) - distanceKm(userLocation, b);
+    return aHasLocation ? -1 : bHasLocation ? 1 : new Date(a.event_date) - new Date(b.event_date);
+  });
+  row.innerHTML = sorted.map(b => {
+    const distance = userLocation && b.lat != null && b.lng != null ? ` · ${distanceKm(userLocation, b).toFixed(1)} km` : '';
+    return `<div class="chip" onclick="openDetail('${b.id}')"><div class="cdot ${isLive(b)?'':'s'}"></div><div><div class="cn">${esc(b.name)}</div><div class="cd">${isLive(b)?'Live now':'Upcoming'} · ${fmtDate(b.event_date)}${distance}</div></div></div>`;
+  }).join('');
+}
+function fmtDate(d) { return d?new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}): ''; }
+function gradFor(e) { return ({'🍛':'#FFD08A,#E8620A','🌸':'#B5D9FF,#2E86DE','🪷':'#FFE57A,#F0B429','🙏':'#C8F7C5,#1B7A3E','🔱':'#D0A0FF,#6B21A8','🪔':'#FFB366,#E8620A','🕉️':'#B8E0FF,#0369A1'}[e]||'#FFD08A,#E8620A'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── BHAKT VIEW ───────────────────────────────────────────────
+async function loadBhaktView() {
+  const nowMs=Date.now();
+  if (bhaktLoadedAt && nowMs-bhaktLoadedAt < 60000) {
+    renderNearbyChips();
+    document.getElementById('bhakt-list').innerHTML = bhandaraItems.length===0
+      ? '<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Bhandaras right now. Check back soon!</div></div>'
+      : bhandaraItems.map(b=>`
+      <div class="bc" onclick="openDetail('${b.id}')">
+        <div class="bc-img" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
+        <div class="bc-body">
+          <div class="bc-name">${esc(b.name)}</div>
+          <div class="bc-org">${esc(b.samiti_name||'')} · ${esc(b.area||'Jabalpur')}</div>
+          <div class="tag-row">
+            ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
+            <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
+            <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
+          </div>
+        </div>
+      </div>`).join('');
+    updateMapMarkers(bhandaraItems);
+    if (userLocation) centerMainMapOnUser();
+    return;
+  }
+  if (!sb) {
+    document.getElementById('chip-row').textContent='Map service is unavailable. Please reload the page.';
+    document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not connect</div><div class="empty-s">Reload the page and try again.</div></div>';
+    return;
+  }
+  const today=new Date().toISOString().split('T')[0];
+  const { data, error } = await sb.from('bhandaras').select('id,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,created_at').eq('status','approved').gte('event_date',today).order('event_date',{ascending:true});
+  if (error) {
+    document.getElementById('chip-row').textContent='Could not load nearby Bhandaras.';
+    document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not load Bhandaras</div><div class="empty-s">'+esc(error.message)+'</div></div>';
+    return;
+  }
+  const items = data||[];
+  bhandaraItems = items;
+  bhaktLoadedAt = Date.now();
+  renderNearbyChips();
+  document.getElementById('bhakt-list').innerHTML = items.length===0
+    ? `<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Bhandaras right now. Check back soon!</div></div>`
+    : items.map(b=>`
+      <div class="bc" onclick="openDetail('${b.id}')">
+        <div class="bc-img" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
+        <div class="bc-body">
+          <div class="bc-name">${esc(b.name)}</div>
+          <div class="bc-org">${esc(b.samiti_name||'')} · ${esc(b.area||'Jabalpur')}</div>
+          <div class="tag-row">
+            ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
+            <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
+            <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
+          </div>
+        </div>
+      </div>`).join('');
+  updateMapMarkers(items);
+  if (userLocation) centerMainMapOnUser();
+}
+
+// ── DETAIL ───────────────────────────────────────────────────
+async function openDetail(id) {
+  const {data}=await sb.from('bhandaras').select('id,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,created_at').eq('id',id).single();
+  if (!data) { toast('Could not load details'); return; }
+  curBhandara=data;
+  document.getElementById('d-tb').textContent=data.name;
+  document.getElementById('d-hero').style.background='linear-gradient(135deg,'+gradFor(data.emoji)+')';
+  document.getElementById('d-emoji').textContent=data.emoji||'🪔';
+  document.getElementById('d-name').textContent=data.name;
+  document.getElementById('d-org').textContent=data.samiti_name||'';
+  document.getElementById('d-loc').textContent=data.address||'';
+  document.getElementById('d-time').textContent=(data.start_time||'')+' – '+(data.end_time||'')+(data.event_date?' · '+fmtDate(data.event_date):'');
+  document.getElementById('d-sp').textContent=data.sponsor||'Not specified';
+  document.getElementById('d-menu').textContent=data.menu||'Not specified';
+  document.getElementById('d-msg').textContent=data.message||'All devotees are warmly welcome.';
+  const mapBtn=document.getElementById('d-map-btn');
+  const live=isLive(data);
+  mapBtn.style.display=live && data.lat!=null && data.lng!=null ? 'flex' : 'none';
+  prevScr=curScr; go('s-dtl');
+}
+
+function openGoogleMaps(){
+  if (!curBhandara || curBhandara.lat==null || curBhandara.lng==null) { toast('Location is not available'); return; }
+  const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(curBhandara.lat+','+curBhandara.lng);
+  window.open(url,'_blank');
+}
+
+// ── SAMITI DASHBOARD ─────────────────────────────────────────
+async function renderDash() {
+  if (!currentUser) return;
+  document.getElementById('dash-av').textContent=(curMeta.full_name||currentUser.email||'S').charAt(0).toUpperCase();
+  document.getElementById('dash-name').textContent=curMeta.samiti_name||'Samiti';
+  document.getElementById('dash-email').textContent=currentUser.email||'';
+  document.getElementById('admin-btn').style.display = isAdmin ? 'block':'none';
+
+  const { data } = await sb.from('bhandaras').select('id,name,emoji,event_date,start_time,end_time,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  const mine=data||[];
+  document.getElementById('stat-total').textContent=mine.length;
+  document.getElementById('stat-live').textContent=mine.filter(isLive).length;
+
+  const statusTag = s => s==='approved' ? '<span class="tag t-live">✅ Approved</span>' : s==='rejected' ? '<span class="tag t-cr">❌ Rejected</span>' : '<span class="tag t-gld">⏳ Pending</span>';
+
+  document.getElementById('dash-list').innerHTML=mine.length===0
+    ?`<div class="empty"><span class="empty-i">📋</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">Tap "Add New Bhandara" to submit your first listing for approval.</div></div>`
+    :mine.map(b=>`
+      <div class="bh-row">
+        <div class="bh-i">${b.emoji||'🪔'}</div>
+        <div style="flex:1;min-width:0">
+          <div class="bh-n">${esc(b.name)}</div>
+          <div class="bh-t">${fmtDate(b.event_date)} · ${esc(b.start_time||'')}–${esc(b.end_time||'')}</div>
+          <div style="margin-top:4px">${statusTag(b.status)}</div>
+        </div>
+        <button class="btn-del" onclick="deleteBhandara('${b.id}')">Delete</button>
+      </div>`).join('');
+}
+
+// ── ADMIN PANEL ──────────────────────────────────────────────
+async function loadAdmin(loadUsers=true) {
+  if (!isAdmin) { toast('Access denied'); go('s-dash','back'); return; }
+  const { data } = await sb.from('bhandaras').select('id,name,samiti_name,area,address,start_time,end_time,event_date,emoji,menu,sponsor,samiti_phone,samiti_email,status,created_at').order('created_at',{ascending:false});
+  const all = data||[];
+  const pending  = all.filter(b=>b.status==='pending');
+  const approved = all.filter(b=>b.status==='approved');
+  const rejected = all.filter(b=>b.status==='rejected');
+
+  document.getElementById('a-total').textContent   = all.length;
+  document.getElementById('a-pending').textContent  = pending.length;
+  document.getElementById('a-approved').textContent = approved.length;
+
+  const renderCard = (b, showActions) => `
+    <div class="pending-card" id="pc-${b.id}">
+      <div class="pc-header">
+        <div class="pc-name">${esc(b.emoji||'🪔')} ${esc(b.name)}</div>
+        <div class="pc-samiti">${esc(b.samiti_name||'')} · ${esc(b.area||'')}</div>
+        <div class="tag-row">
+          ${b.status==='pending'?'<span class="tag t-gld">⏳ Pending</span>':b.status==='approved'?'<span class="tag t-live">✅ Approved</span>':'<span class="tag t-cr">❌ Rejected</span>'}
+          <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
+        </div>
+      </div>
+      <div class="pc-details">
+        <div class="pc-row"><span>Address</span><span>${esc(b.address||'–')}</span></div>
+        <div class="pc-row"><span>Time</span><span>${esc(b.start_time||'')} – ${esc(b.end_time||'')}</span></div>
+        <div class="pc-row"><span>Menu</span><span>${esc(b.menu||'–')}</span></div>
+        <div class="pc-row"><span>Sponsor</span><span>${esc(b.sponsor||'–')}</span></div>
+        <div class="pc-row"><span>Phone</span><span>${esc(b.samiti_phone||'–')}</span></div>
+        <div class="pc-row"><span>Email</span><span>${esc(b.samiti_email||'–')}</span></div>
+      </div>
+      ${showActions ? `
+      <div class="pc-actions">
+        <button class="btn-approve" onclick="updateStatus('${b.id}','approved')">✅ Approve</button>
+        <button class="btn-reject"  onclick="updateStatus('${b.id}','rejected')">❌ Reject</button>
+      </div>` : ''}
+      <div class="pc-actions"><button class="btn-reject" onclick="removeBhandara('${b.id}')">🗑️ Remove</button></div>
+    </div>`;
+
+  document.getElementById('admin-pending').innerHTML  = pending.length===0  ? '<div class="empty" style="padding:1.5rem"><span class="empty-i" style="font-size:2rem">🎉</span><div class="empty-s">No pending approvals!</div></div>' : pending.map(b=>renderCard(b,true)).join('');
+  document.getElementById('admin-approved').innerHTML = approved.length===0 ? '<div style="font-size:.83rem;color:var(--t3);padding:.5rem 0">None yet</div>' : approved.map(b=>renderCard(b,false)).join('');
+  document.getElementById('admin-rejected').innerHTML = rejected.length===0 ? '<div style="font-size:.83rem;color:var(--t3);padding:.5rem 0">None</div>' : rejected.map(b=>renderCard(b,false)).join('');
+  if (loadUsers) loadAdminUsers();
+}
+
+async function loadAdminUsers() {
+  if (!isAdmin) return;
+  const { data, error } = await sb.from('samitis').select('id,user_id,samiti_name,full_name,phone,area,email,created_at,blocked').order('created_at',{ascending:false});
+  const box=document.getElementById('admin-users');
+  if (error) { box.innerHTML='<div class="empty" style="padding:1.5rem"><div class="empty-s">Could not load users: '+esc(error.message)+'</div></div>'; return; }
+  const users=data||[];
+  box.innerHTML=users.length ? users.map(u => {
+    const initial=esc((u.full_name||u.samiti_name||u.email||'S').charAt(0).toUpperCase());
+    const status=u.blocked
+      ? '<span class="ua-status blocked">BLOCKED</span>'
+      : '<span class="ua-status ok">ACTIVE</span>';
+    return `<div class="user-admin-card">
+      <div class="ua-head">
+        <div class="ua-av">${initial}</div>
+        <div style="flex:1;min-width:0"><div class="ua-name">${esc(u.samiti_name||'Samiti')}</div><div class="ua-email">${esc(u.email||'No email')}</div></div>
+        ${status}
+      </div>
+      <div class="ua-row"><b>Name</b><span>${esc(u.full_name||'–')}</span></div>
+      <div class="ua-row"><b>Phone</b><span>${esc(u.phone||'–')}</span></div>
+      <div class="ua-row"><b>Area</b><span>${esc(u.area||'–')}</span></div>
+      <div class="ua-row"><b>Joined</b><span>${u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN') : '–'}</span></div>
+      <div class="ua-actions">
+        ${u.blocked
+          ? `<button class="btn-unblock" onclick="setUserBlocked('${u.user_id}',false)">🔓 Unblock user</button>`
+          : `<button class="btn-block" onclick="setUserBlocked('${u.user_id}',true)">🚫 Temporarily block</button>`}
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty" style="padding:1.5rem"><div class="empty-s">No registered Samiti users yet.</div></div>';
+}
+
+async function setUserBlocked(userId, blocked) {
+  if (!isAdmin) { toast('Admin access required'); return; }
+  const action=blocked ? 'temporarily block' : 'unblock';
+  if (!confirm((blocked?'Block':'Unblock')+' this user?')) return;
+  const { error } = await sb.from('samitis').update({blocked}).eq('user_id',userId);
+  if (error) { toast('Could not '+action+' user: '+error.message); return; }
+  toast(blocked ? 'User blocked' : 'User unblocked');
+  loadAdminUsers();
+}
+
+async function updateStatus(id, status) {
+  const { error } = await sb.from('bhandaras').update({ status }).eq('id', id);
+  if (error) { toast('Error: '+error.message); return; }
+  toast(status==='approved' ? '✅ Bhandara approved! Now visible to bhakts.' : '❌ Bhandara rejected.');
+  loadAdmin(false);
+}
+
+// ── ADD BHANDARA ─────────────────────────────────────────────
+async function submitBhandara() {
+  const errEl=document.getElementById('add-err'); errEl.style.display='none';
+  const name   =document.getElementById('a-name').value.trim();
+  const samiti =document.getElementById('a-samiti').value.trim();
+  const addr   =document.getElementById('a-addr').value.trim();
+  const start  =document.getElementById('a-start').value;
+  const end    =document.getElementById('a-end').value;
+  const date   =document.getElementById('a-date').value;
+  const menu   =document.getElementById('a-menu').value.trim();
+  const sp     =document.getElementById('a-sp').value.trim();
+  const phone  =document.getElementById('a-phone').value.trim();
+  const upiId  =document.getElementById('a-upi').value.trim();
+  const emoji  =document.getElementById('a-emoji').value;
+  const msg    =document.getElementById('a-msg').value.trim();
+  if (!name||!samiti||!addr||!date||!phone||!upiId) { errEl.textContent='Please fill all required (*) fields, including Samiti Mobile Number and Donation UPI ID'; errEl.style.display='block'; return; }
+  if (!/^\\d{10}$/.test(phone)) { errEl.textContent='Enter a valid 10-digit Samiti mobile number'; errEl.style.display='block'; return; }
+  if (!pinnedLatLng) { errEl.textContent='Please tap the map to pin the location'; errEl.style.display='block'; return; }
+  if (upiId&&!/^[^\s@]+@[^\s@]+$/.test(upiId)) { errEl.textContent='Enter a valid UPI ID (for example, samiti@upi)'; errEl.style.display='block'; return; }
+  const btn=document.getElementById('pub-btn'); btn.disabled=true; btn.innerHTML='Submitting…';
+  try {
+    const { error } = await sb.from('bhandaras').insert({
+      name, samiti_name:samiti, samiti_phone:phone, address:addr, area:curMeta.area||'Jabalpur',
+      samiti_email: currentUser.email,
+      user_id:currentUser.id, lat:pinnedLatLng.lat, lng:pinnedLatLng.lng,
+      start_time:start, end_time:end, event_date:date,
+      menu, sponsor:sp, upi_id:upiId, emoji, message:msg,
+      status:'pending'
+    });
+    if (error) throw error;
+  } catch (error) {
+    errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara'); errEl.style.display='block';
+    btn.disabled=false; btn.innerHTML='📨 Submit for Approval'; return;
+  }
+  btn.disabled=false; btn.innerHTML='📨 Submit for Approval';
+  ['a-name','a-samiti','a-addr','a-menu','a-sp','a-phone','a-upi','a-msg'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('a-date').value='';
+  pinnedLatLng=null; if(addMarker){addMarker.remove();addMarker=null;}
+  document.getElementById('pin-hint').textContent='👆 Tap map to drop your pin';
+  document.getElementById('pin-hint').classList.remove('done');
+  document.getElementById('pin-ok').textContent='';
+  addMapInst=null;
+  toast('📨 Submitted! Admin will review and approve shortly.');
+  go('s-dash','back');
+}
+
+async function removeBhandara(id) {
+  if (!isAdmin) { toast('Admin access required'); return; }
+  if (!confirm('Remove this Bhandara?')) return;
+  const { error } = await sb.from('bhandaras').delete().eq('id', id);
+  if (error) { toast('Could not remove Bhandara'); return; }
+  toast('Bhandara removed');
+  loadAdmin(false);
+}
+
+async function deleteBhandara(id) {
+  if (!confirm('Delete this Bhandara?')) return;
+  await sb.from('bhandaras').delete().eq('id',id).eq('user_id',currentUser.id);
+  toast('Deleted'); renderDash();
+}
+
+// ── DONATE ───────────────────────────────────────────────────
+function openDonate(){
+  document.getElementById('don-org').textContent='Donate to '+(curBhandara?.samiti_name||'the Samiti');
+  const upi=curBhandara?.upi_id||'';
+  document.getElementById('don-upi').textContent=upi?'UPI ID: '+upi:'Donation UPI is not available';
+  document.getElementById('don-pay-btn').style.display=upi?'flex':'none';
+  document.getElementById('don-pay-note').textContent=upi?'Google Pay · PhonePe · Paytm · Any UPI':'This Bhandara has no donation UPI ID';
+  document.getElementById('don-ov').classList.add('on');
+}
+function closeDon(){document.getElementById('don-ov').classList.remove('on');}
+function sAmt(btn,v){document.querySelectorAll('.ab2').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');selAmtVal=v;if(v===0)document.getElementById('c-amt').focus();}
+function payNow(){
+  const amount=Number(document.getElementById('c-amt').value||selAmtVal);
+  if(!Number.isFinite(amount)||amount<=0){toast('Enter a valid donation amount');return;}
+  if(!curBhandara?.upi_id){toast('Donation UPI ID is not available');return;}
+  const params=new URLSearchParams({pa:curBhandara.upi_id,pn:curBhandara.samiti_name||'Samiti',am:amount.toFixed(2),cu:'INR',tn:'Donation for '+(curBhandara.name||'Bhandara')});
+  window.location.href='upi://pay?'+params.toString();
+}
+document.getElementById('don-ov').addEventListener('click',e=>{if(e.target===document.getElementById('don-ov'))closeDon();});
+document.getElementById('don-ov').addEventListener('click',e=>{if(e.target===document.getElementById('don-ov'))closeDon();});
+
+init();
+</script>
+</body>
+</html>
