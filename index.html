@@ -1117,7 +1117,7 @@ async function loadBhaktView() {
         <div class="bc-img" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
         <div class="bc-body">
           <div class="bc-name">${esc(b.name)}</div>
-          <div class="bc-org">${esc(b.samiti_name||'')} · ${esc(b.area||'Jabalpur')}</div>
+          <div class="bc-org">${esc(b.samiti_name||'')}${b.samiti_verified ? '<span class="verified-badge">✓ Verified</span>' : ''} · ${esc(b.area||'Jabalpur')}</div>
           <div class="tag-row">
             ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
             <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
@@ -1152,7 +1152,7 @@ async function loadBhaktView() {
         <div class="bc-img" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
         <div class="bc-body">
           <div class="bc-name">${esc(b.name)}</div>
-          <div class="bc-org">${esc(b.samiti_name||'')} · ${esc(b.area||'Jabalpur')}</div>
+          <div class="bc-org">${esc(b.samiti_name||'')}${b.samiti_verified ? '<span class="verified-badge">✓ Verified</span>' : ''} · ${esc(b.area||'Jabalpur')}</div>
           <div class="tag-row">
             ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
             <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
@@ -1173,7 +1173,7 @@ async function openDetail(id) {
   document.getElementById('d-hero').style.background='linear-gradient(135deg,'+gradFor(data.emoji)+')';
   document.getElementById('d-emoji').textContent=data.emoji||'🪔';
   document.getElementById('d-name').textContent=data.name;
-  document.getElementById('d-org').textContent=data.samiti_name||'';
+  document.getElementById('d-org').innerHTML=esc(data.samiti_name||'')+(data.samiti_verified?' <span class="verified-badge">✓ Verified Samiti</span>':'');
   document.getElementById('d-loc').textContent=data.address||'';
   document.getElementById('d-time').textContent=(data.start_time||'')+' – '+(data.end_time||'')+(data.event_date?' · '+fmtDate(data.event_date):'');
   document.getElementById('d-sp').textContent=data.sponsor||'Not specified';
