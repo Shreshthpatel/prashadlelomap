@@ -726,7 +726,7 @@ select:focus-visible{
       <div class="s-contact">
     <div class="s-contact-h">📞 Bhandara / Samiti contact</div>
     <div class="s-contact-p">Planning a Bhandara or have any normal update? Please contact Shreshth directly so he can know about it faster.</div>
-    <a class="s-contact-btn" href="tel:9752157775">📲 Call / WhatsApp: 9752157775</a>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><a class="s-contact-btn" href="tel:9752157775">📞 Call</a><a class="s-contact-btn" href="https://wa.me/919752157775" target="_blank" rel="noopener">💬 WhatsApp</a></div>
   </div>
 <button class="btn-add" onclick="go('s-add')">➕ Add New Bhandara</button>
     <div class="slbl" style="margin-bottom:.65rem">My Bhandaras</div>
@@ -1194,6 +1194,109 @@ async function loadBhaktView() {
   updateMapMarkers(items);
   renderOpenBhandaraSwipeCard();
   if (userLocation) centerMainMapOnUser();
+}
+
+
+// ── OPEN BHANDARA SWIPE CARD ─────────────────────────────────
+const OPEN_BH_DISMISSED_KEY='prashad_lelo_open_bh_dismissed';
+let openSwipeCard=null, openSwipeX=0, openSwipeY=0, openSwipeDragging=false;
+
+function getDismissedOpenBhandaras(){
+  try { return JSON.parse(sessionStorage.getItem(OPEN_BH_DISMISSED_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function dismissOpenBhandara(id){
+  const ids=getDismissedOpenBhandaras();
+  if(!ids.includes(id)) ids.push(id);
+  try { sessionStorage.setItem(OPEN_BH_DISMISSED_KEY,JSON.stringify(ids)); } catch(e){}
+}
+function openGoogleMapsFor(b){
+  if (!b || b.lat==null || b.lng==null) { toast('Location is not available'); return; }
+  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(b.lat+','+b.lng),'_blank');
+}
+function renderOpenBhandaraSwipeCard(){
+  const wrap=document.getElementById('open-bh-swipe');
+  if(!wrap) return;
+  const dismissed=new Set(getDismissedOpenBhandaras());
+  const openItems=(bhandaraItems||[])
+    .filter(b=>isLive(b) && !dismissed.has(b.id))
+    .sort((a,b)=>{
+      if(userLocation && a.lat!=null && a.lng!=null && b.lat!=null && b.lng!=null)
+        return distanceKm(userLocation,{lat:a.lat,lng:a.lng})-distanceKm(userLocation,{lat:b.lat,lng:b.lng});
+      return 0;
+    });
+  if(!openItems.length){
+    wrap.classList.remove('on');
+    wrap.innerHTML='';
+    openSwipeCard=null;
+    return;
+  }
+  const b=openItems[0];
+  openSwipeCard=b;
+  wrap.innerHTML=`
+    <div class="obs-card" id="obs-card">
+      <div class="obs-head">
+        <span class="obs-live"><span class="ldot"></span> LIVE NOW</span>
+        <div class="obs-title">Bhandara near you</div>
+        <button class="obs-x" onclick="dismissOpenSwipe()">×</button>
+      </div>
+      <div class="obs-main">
+        <div class="obs-emoji" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
+        <div class="obs-info">
+          <div class="obs-name">${esc(b.name)}</div>
+          <div class="obs-org">${esc(b.samiti_name||'')}${b.samiti_verified?' · ✓ Verified':''}</div>
+          <div class="obs-meta">⏰ ${esc(b.start_time||'')}–${esc(b.end_time||'')} · 📍 ${esc(b.area||'Jabalpur')}</div>
+        </div>
+      </div>
+      <div class="obs-actions">
+        <button class="obs-btn obs-dismiss" onclick="dismissOpenSwipe()">← Dismiss</button>
+        <button class="obs-btn obs-dir" onclick="directionOpenSwipe()">Swipe → 📍 Directions</button>
+      </div>
+      <div class="obs-hint">Swipe left to dismiss · Swipe right for directions</div>
+    </div>`;
+  wrap.classList.add('on');
+  bindOpenSwipeGesture();
+}
+function dismissOpenSwipe(){
+  const b=openSwipeCard;
+  if(!b) return;
+  dismissOpenBhandara(b.id);
+  const card=document.getElementById('obs-card');
+  if(card){ card.style.transform='translateX(-110%) rotate(-6deg)'; card.style.opacity='0'; }
+  setTimeout(renderOpenBhandaraSwipeCard,180);
+}
+function directionOpenSwipe(){
+  const b=openSwipeCard;
+  if(!b) return;
+  openGoogleMapsFor(b);
+}
+function bindOpenSwipeGesture(){
+  const card=document.getElementById('obs-card');
+  if(!card || card.dataset.bound) return;
+  card.dataset.bound='1';
+  card.addEventListener('pointerdown',e=>{
+    openSwipeDragging=true; openSwipeX=e.clientX; openSwipeY=e.clientY;
+    card.setPointerCapture?.(e.pointerId);
+  });
+  card.addEventListener('pointermove',e=>{
+    if(!openSwipeDragging) return;
+    const dx=e.clientX-openSwipeX, dy=e.clientY-openSwipeY;
+    if(Math.abs(dx)<Math.abs(dy)*1.15) return;
+    card.style.transition='none';
+    card.style.transform=`translateX(${dx}px) rotate(${dx/28}deg)`;
+  });
+  card.addEventListener('pointerup',e=>{
+    if(!openSwipeDragging) return;
+    openSwipeDragging=false;
+    const dx=e.clientX-openSwipeX, dy=e.clientY-openSwipeY;
+    card.style.transition='';
+    if(Math.abs(dx)>85 && Math.abs(dx)>Math.abs(dy)*1.15){
+      if(dx<0) dismissOpenSwipe(); else directionOpenSwipe();
+    } else card.style.transform='';
+  });
+  card.addEventListener('pointercancel',()=>{
+    openSwipeDragging=false; card.style.transition=''; card.style.transform='';
+  });
 }
 
 // ── DETAIL ───────────────────────────────────────────────────
