@@ -578,7 +578,7 @@ select:focus-visible{
 .wiz-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:1.1rem}.wiz-p{height:5px;border-radius:8px;background:var(--bd);transition:background .2s}.wiz-p.on{background:var(--or)}
 .wiz-title{font-size:1.2rem;font-weight:800;color:var(--t);margin-bottom:.25rem}.wiz-sub{font-size:.78rem;color:var(--t3);line-height:1.5;margin-bottom:1rem}.wiz-step{display:none;animation:fadeIn .2s ease}.wiz-step.on{display:block}
 .wiz-nav{display:grid;grid-template-columns:1fr 1.4fr;gap:.6rem;margin-top:1rem;padding-bottom:.5rem}.wiz-nav.single{grid-template-columns:1fr}.wiz-back{padding:.9rem;background:#fff;color:var(--t2);font-size:.9rem;font-weight:700;border:1.5px solid var(--bd);border-radius:var(--r);cursor:pointer;font-family:inherit}.wiz-next{padding:.9rem;background:var(--or);color:#fff;font-size:.9rem;font-weight:700;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(232,98,10,.22)}
-.wiz-account{background:linear-gradient(135deg,var(--or-l),#fff);border:1px solid rgba(232,98,10,.15);border-radius:var(--r);padding:1rem;margin-bottom:.8rem}.wiz-account-row{display:flex;justify-content:space-between;gap:.7rem;padding:.42rem 0;border-bottom:1px solid rgba(232,98,10,.08);font-size:.82rem}.wiz-account-row:last-child{border-bottom:none}.wiz-account-row b{color:var(--t3);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}.wiz-account-row span{text-align:right;font-weight:600;color:var(--t)}.wiz-lock{font-size:.72rem;color:var(--gn);margin-top:.7rem;font-weight:600}.wiz-tip{background:var(--gld-l);border:1px solid rgba(200,146,10,.22);border-radius:var(--rs);padding:.75rem .9rem;font-size:.78rem;color:var(--t2);line-height:1.5;margin-bottom:1rem}
+.wiz-account{background:linear-gradient(135deg,var(--or-l),#fff);border:1px solid rgba(232,98,10,.15);border-radius:var(--r);padding:1rem;margin-bottom:.8rem}.wiz-account-row{display:flex;justify-content:space-between;gap:.7rem;padding:.42rem 0;border-bottom:1px solid rgba(232,98,10,.08);font-size:.82rem}.wiz-account-row:last-child{border-bottom:none}.wiz-account-row b{color:var(--t3);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}.wiz-account-row input{text-align:right;font-weight:600;color:var(--t);border:0;background:transparent;outline:0;width:70%;font:inherit}.wiz-account-row input:focus{background:#fff;border-bottom:1px solid var(--or)}.wiz-auto::placeholder{color:var(--t3);font-weight:500}.wiz-lock{font-size:.72rem;color:var(--gn);margin-top:.7rem;font-weight:600}.wiz-tip{background:var(--gld-l);border:1px solid rgba(200,146,10,.22);border-radius:var(--rs);padding:.75rem .9rem;font-size:.78rem;color:var(--t2);line-height:1.5;margin-bottom:1rem}
 .wiz-loc-actions{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.7rem}.wiz-small{padding:.7rem;background:#fff;color:var(--t2);font-size:.78rem;font-weight:700;border:1px solid var(--bd);border-radius:var(--rs);cursor:pointer;font-family:inherit}
 .wiz-preview{background:#fff;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:.8rem}.wiz-preview-hero{padding:1.1rem;text-align:center;background:linear-gradient(135deg,var(--or-l),#fff)}.wiz-preview-emoji{font-size:2.8rem}.wiz-preview-name{font-size:1.08rem;font-weight:800;margin-top:.25rem}.wiz-preview-org{font-size:.76rem;color:var(--t3);margin-top:.15rem}.wiz-preview-body{padding:.85rem 1rem}.wiz-preview-row{font-size:.78rem;padding:.38rem 0;border-bottom:1px solid var(--bd2);display:flex;gap:.5rem}.wiz-preview-row:last-child{border-bottom:none}.wiz-preview-row b{min-width:70px;color:var(--t3)}
 .wiz-edit{width:100%;padding:.82rem;background:#fff;color:var(--or);font-size:.88rem;font-weight:700;border:1.5px solid rgba(232,98,10,.35);border-radius:var(--r);cursor:pointer;font-family:inherit;margin-bottom:.65rem}.wiz-jai{width:100%;padding:1rem;background:var(--or);color:#fff;font-size:1rem;font-weight:800;border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(232,98,10,.28)}.wiz-memory{font-size:.7rem;color:var(--gn);margin-top:.45rem;line-height:1.4}
@@ -783,7 +783,7 @@ select:focus-visible{
     <section class="wiz-step on" id="wiz-step-1">
       <div class="wiz-title">Samiti Details</div><div class="wiz-sub">Your account details are filled automatically. You don't need to type them again.</div>
       <div class="wiz-account">
-        <div class="wiz-account-row"><b>Samiti</b><span id="wiz-samiti">–</span></div><div class="wiz-account-row"><b>Contact</b><span id="wiz-contact">–</span></div><div class="wiz-account-row"><b>Mobile</b><span id="wiz-phone">–</span></div><div class="wiz-account-row"><b>Area</b><span id="wiz-area">–</span></div><div class="wiz-account-row"><b>Email</b><span id="wiz-email">–</span></div>
+        <div class="wiz-account-row"><b>Samiti</b><input class="wiz-auto" id="wiz-samiti" type="text" placeholder="Samiti name"></div><div class="wiz-account-row"><b>Contact</b><input class="wiz-auto" id="wiz-contact" type="text" placeholder="Contact person"></div><div class="wiz-account-row"><b>Mobile</b><input class="wiz-auto" id="wiz-phone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile"></div><div class="wiz-account-row"><b>Area</b><input class="wiz-auto" id="wiz-area" type="text" placeholder="Area"></div><div class="wiz-account-row"><b>Email</b><input class="wiz-auto" id="wiz-email" type="email" placeholder="Email"></div>
       </div>
       <div class="wiz-lock">🔒 These details come from your Samiti account.</div>
       <div class="wiz-tip" style="margin-top:1rem">Need to change your Samiti details? Update your profile first, then start the listing again.</div>
@@ -1479,7 +1479,7 @@ async function updateStatus(id, status) {
 
 // ── ADD BHANDARA ─────────────────────────────────────────────
 let addWizardStep=1;
-const ADD_UPI_KEY='prashad_lelo_saved_upi_v1', ADD_LOC_KEY='prashad_lelo_last_location_v1';
+const ADD_UPI_KEY='prashad_lelo_saved_upi_v1', ADD_LOC_KEY='prashad_lelo_last_location_v1', ADD_FORM_KEY='prashad_lelo_bhandara_defaults_v1';
 
 function updateAddMode(){
   const verified=!!curMeta.verified, notice=document.getElementById('add-notice'), btn=document.getElementById('pub-btn');
@@ -1491,15 +1491,29 @@ function updateAddMode(){
 }
 function startAddWizard(){
   addWizardStep=1;document.getElementById('add-err').style.display='none';
-  document.getElementById('wiz-samiti').textContent=curMeta.samiti_name||'Samiti';
-  document.getElementById('wiz-contact').textContent=curMeta.full_name||currentUser?.email||'–';
-  document.getElementById('wiz-phone').textContent=curMeta.phone||'–';document.getElementById('wiz-area').textContent=curMeta.area||'Jabalpur';document.getElementById('wiz-email').textContent=currentUser?.email||curMeta.email||'–';
-  updateAddMode();const upi=localStorage.getItem(ADD_UPI_KEY);if(upi&&!document.getElementById('a-upi').value)document.getElementById('a-upi').value=upi;renderAddWizard();
+  let saved={};try{saved=JSON.parse(localStorage.getItem(ADD_FORM_KEY)||'{}')}catch(e){}
+  const set=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.value=val};
+  set('wiz-samiti',saved.samiti_name||curMeta.samiti_name||'');set('wiz-contact',saved.full_name||curMeta.full_name||currentUser?.email||'');set('wiz-phone',saved.phone||curMeta.phone||'');set('wiz-area',saved.area||curMeta.area||'Jabalpur');set('wiz-email',saved.email||currentUser?.email||curMeta.email||'');
+  ['a-name','a-addr','a-menu','a-sp','a-msg'].forEach(id=>set(id,saved[id]||''));
+  if(saved.date)set('a-date',saved.date);if(saved.start)set('a-start',saved.start);if(saved.end)set('a-end',saved.end);if(saved.emoji)set('a-emoji',saved.emoji);
+  bindAddMemory();updateAddMode();const upi=localStorage.getItem(ADD_UPI_KEY);if(upi&&!document.getElementById('a-upi').value)document.getElementById('a-upi').value=upi;renderAddWizard();
 }
 function renderAddWizard(){
   for(let i=1;i<=4;i++){document.getElementById('wiz-step-'+i).classList.toggle('on',i===addWizardStep);document.getElementById('wiz-p'+i).classList.toggle('on',i<=addWizardStep);}
   if(addWizardStep===3)setTimeout(()=>{initAddMap();addMapInst?.invalidateSize();},60);
   if(addWizardStep===4)updateAddPreview();window.scrollTo(0,0);
+}
+function saveBhandaraFormMemory(){
+  const ids=['a-name','a-addr','a-menu','a-sp','a-msg'];
+  const data={samiti_name:document.getElementById('wiz-samiti')?.value.trim(),full_name:document.getElementById('wiz-contact')?.value.trim(),phone:document.getElementById('wiz-phone')?.value.trim(),area:document.getElementById('wiz-area')?.value.trim(),email:document.getElementById('wiz-email')?.value.trim()};
+  ids.forEach(id=>{const el=document.getElementById(id);if(el&&el.value.trim())data[id]=el.value.trim()});
+  ['a-date','a-start','a-end','a-emoji'].forEach(id=>{const el=document.getElementById(id);if(el&&el.value)data[id]=el.value});
+  try{localStorage.setItem(ADD_FORM_KEY,JSON.stringify(data))}catch(e){}
+}
+function bindAddMemory(){
+  ['wiz-samiti','wiz-contact','wiz-phone','wiz-area','wiz-email','a-name','a-addr','a-menu','a-sp','a-msg','a-date','a-start','a-end','a-emoji'].forEach(id=>{
+    const el=document.getElementById(id);if(el&&!el.dataset.memoryBound){el.addEventListener('input',saveBhandaraFormMemory);el.addEventListener('change',saveBhandaraFormMemory);el.dataset.memoryBound='1'}
+  });
 }
 function validateAddStep(step){
   const err=document.getElementById('add-err');err.style.display='none';
@@ -1519,11 +1533,11 @@ function updateLocationText(label){const el=document.getElementById('wiz-locatio
 function updateAddPreview(){const v=id=>document.getElementById(id)?.value.trim()||'–';document.getElementById('prev-emoji').textContent=document.getElementById('a-emoji').value||'🍛';document.getElementById('prev-name').textContent=v('a-name')==='–'?'Your Bhandara':v('a-name');document.getElementById('prev-org').textContent=curMeta.samiti_name||'Your Samiti';document.getElementById('prev-date').textContent=v('a-date')==='–'?'–':fmtDate(v('a-date'));document.getElementById('prev-time').textContent=v('a-start')+' – '+v('a-end');document.getElementById('prev-addr').textContent=v('a-addr');document.getElementById('prev-menu').textContent=v('a-menu');document.getElementById('prev-sp').textContent=v('a-sp');document.getElementById('prev-upi').textContent=v('a-upi')}
 async function submitBhandara(){
   const errEl=document.getElementById('add-err');errEl.style.display='none';if(!validateAddStep(2)||!validateAddStep(3)||!validateAddStep(4))return;
-  const name=document.getElementById('a-name').value.trim(),addr=document.getElementById('a-addr').value.trim(),start=document.getElementById('a-start').value,end=document.getElementById('a-end').value,date=document.getElementById('a-date').value,menu=document.getElementById('a-menu').value.trim(),sp=document.getElementById('a-sp').value.trim(),upiId=document.getElementById('a-upi').value.trim(),emoji=document.getElementById('a-emoji').value,msg=document.getElementById('a-msg').value.trim(),phone=String(curMeta.phone||'').trim();
-  if(!/^\d{10}$/.test(phone)){errEl.textContent='Your Samiti account does not have a valid 10-digit mobile number. Please update your profile.';errEl.style.display='block';addWizardStep=1;renderAddWizard();return}
+  const name=document.getElementById('a-name').value.trim(),addr=document.getElementById('a-addr').value.trim(),start=document.getElementById('a-start').value,end=document.getElementById('a-end').value,date=document.getElementById('a-date').value,menu=document.getElementById('a-menu').value.trim(),sp=document.getElementById('a-sp').value.trim(),upiId=document.getElementById('a-upi').value.trim(),emoji=document.getElementById('a-emoji').value,msg=document.getElementById('a-msg').value.trim(),samitiName=document.getElementById('wiz-samiti').value.trim(),contactName=document.getElementById('wiz-contact').value.trim(),phone=String(document.getElementById('wiz-phone').value.trim());
+  if(!samitiName){errEl.textContent='Please enter the Samiti name.';errEl.style.display='block';addWizardStep=1;renderAddWizard();return}if(!/^\d{10}$/.test(phone)){errEl.textContent='Your Samiti account does not have a valid 10-digit mobile number. Please update your profile.';errEl.style.display='block';addWizardStep=1;renderAddWizard();return}
   const btn=document.getElementById('pub-btn');btn.disabled=true;btn.innerHTML='🙏 Jai Mata Di…';
-  try{const {error}=await sb.from('bhandaras').insert({name,samiti_name:curMeta.samiti_name||'Samiti',samiti_phone:phone,address:addr,area:curMeta.area||'Jabalpur',samiti_email:currentUser.email,user_id:currentUser.id,lat:pinnedLatLng.lat,lng:pinnedLatLng.lng,start_time:start,end_time:end,event_date:date,menu,sponsor:sp,upi_id:upiId,emoji,message:msg,status:curMeta.verified?'approved':'pending',samiti_verified:!!curMeta.verified});if(error)throw error}catch(error){errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara');errEl.style.display='block';btn.disabled=false;updateAddMode();return}
-  localStorage.setItem(ADD_UPI_KEY,upiId);localStorage.setItem(ADD_LOC_KEY,JSON.stringify({lat:Number(pinnedLatLng.lat),lng:Number(pinnedLatLng.lng),label:addr}));btn.disabled=false;updateAddMode();
+  try{const {error}=await sb.from('bhandaras').insert({name,samiti_name:samitiName||'Samiti',samiti_phone:phone,address:addr,area:curMeta.area||'Jabalpur',samiti_email:currentUser.email,user_id:currentUser.id,lat:pinnedLatLng.lat,lng:pinnedLatLng.lng,start_time:start,end_time:end,event_date:date,menu,sponsor:sp,upi_id:upiId,emoji,message:msg,status:curMeta.verified?'approved':'pending',samiti_verified:!!curMeta.verified});if(error)throw error}catch(error){errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara');errEl.style.display='block';btn.disabled=false;updateAddMode();return}
+  saveBhandaraFormMemory();localStorage.setItem(ADD_UPI_KEY,upiId);localStorage.setItem(ADD_LOC_KEY,JSON.stringify({lat:Number(pinnedLatLng.lat),lng:Number(pinnedLatLng.lng),label:addr}));btn.disabled=false;updateAddMode();
   ['a-name','a-addr','a-menu','a-sp','a-upi','a-msg'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});document.getElementById('a-date').value='';document.getElementById('a-start').value='12:00';document.getElementById('a-end').value='20:00';pinnedLatLng=null;if(addMarker){addMarker.remove();addMarker=null}document.getElementById('pin-hint').textContent='👆 Tap map to drop your pin';document.getElementById('pin-hint').classList.remove('done');document.getElementById('pin-ok').textContent='';addWizardStep=1;toast(curMeta.verified?'🙏 Jai Mata Di! Bhandara published.':'🙏 Jai Mata Di! Bhandara submitted for admin approval.');go('s-dash','back');
 }
 async function removeBhandara(id) {
