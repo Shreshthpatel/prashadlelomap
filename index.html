@@ -674,6 +674,16 @@ select.inp option{background:#1D100B;color:#fff}
 .btn-del{background:rgba(224,106,97,.06);border-color:rgba(224,106,97,.35)}
 .admin-tb{background:rgba(14,7,5,.92)}
 .admin-header{background:linear-gradient(135deg,rgba(45,21,9,.95),rgba(23,10,6,.95));border-bottom:1px solid rgba(228,184,74,.10)}
+.admin-nav-card{background:linear-gradient(135deg,rgba(240,122,25,.12),rgba(228,184,74,.06));border:1px solid rgba(228,184,74,.18);border-radius:var(--r);padding:1rem 1.05rem;margin-bottom:1.15rem;display:flex;align-items:center;gap:.85rem;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .15s,border-color .15s,background .15s}
+.admin-nav-card:active{transform:scale(.985)}
+.admin-nav-card:hover{border-color:rgba(228,184,74,.32);background:linear-gradient(135deg,rgba(240,122,25,.16),rgba(228,184,74,.08))}
+.admin-nav-icon{width:44px;height:44px;border-radius:13px;background:rgba(228,184,74,.12);border:1px solid rgba(228,184,74,.18);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.admin-nav-title{font-size:.92rem;font-weight:800;color:#FFF8EF}
+.admin-nav-sub{font-size:.74rem;color:#A8907C;margin-top:3px}
+.admin-nav-arrow{margin-left:auto;color:#F3CC72;font-size:1.15rem}
+.admin-list-head{margin-bottom:.9rem}
+.admin-list-title{font-size:1rem;font-weight:800;color:#FFF8EF}
+.admin-list-sub{font-size:.76rem;color:#A8907C;margin-top:3px}
 .asc{background:rgba(255,255,255,.055);border-color:var(--bd)}
 .pending-card,.user-admin-card{overflow:hidden}
 .pc-details{background:rgba(255,255,255,.035)}
@@ -902,10 +912,16 @@ button,a,.bc,.chip{touch-action:manipulation}
         <div class="asc"><div class="asc-n" style="color:var(--gn)" id="a-approved">0</div><div class="asc-l">Approved</div></div>
       </div>
 
-      <div class="admin-section">👥 Samiti Users</div>
-      <div id="admin-users"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
+      <div class="admin-nav-card" onclick="go('s-admin-samitis')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')go('s-admin-samitis')">
+        <div class="admin-nav-icon">👥</div>
+        <div style="flex:1;min-width:0">
+          <div class="admin-nav-title">Samitis</div>
+          <div class="admin-nav-sub">Open the registered Samiti list and manage each account</div>
+        </div>
+        <div class="admin-nav-arrow">›</div>
+      </div>
 
-      <div class="admin-section" style="margin-top:1.2rem">⏳ Pending Approval</div>
+      <div class="admin-section">⏳ Pending Approval</div>
       <div id="admin-pending"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
 
       <div class="admin-section" style="margin-top:1.2rem">✅ Approved</div>
@@ -913,6 +929,28 @@ button,a,.bc,.chip{touch-action:manipulation}
 
       <div class="admin-section" style="margin-top:1.2rem">❌ Rejected</div>
       <div id="admin-rejected"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN SAMITI LIST -->
+<div id="s-admin-samitis" class="scr">
+  <div class="tb admin-tb">
+    <button class="tb-bk" onclick="go('s-admin','back')">←</button>
+    <div class="tb-t">👥 Samitis</div>
+    <div class="tb-b tb-admin">ADMIN</div>
+  </div>
+  <div style="overflow-y:auto;flex:1">
+    <div class="admin-header">
+      <div class="admin-h">Registered Samitis</div>
+      <div class="admin-s">Open a Samiti tile to review and manage its account.</div>
+    </div>
+    <div class="ab" style="padding-top:0">
+      <div class="admin-list-head">
+        <div class="admin-list-title">All Samitis</div>
+        <div class="admin-list-sub">Verification, contact and account controls</div>
+      </div>
+      <div id="admin-users"><div class="loader"><div class="ldsp"></div><div class="ldsp"></div><div class="ldsp"></div></div></div>
     </div>
   </div>
 </div>
@@ -1041,7 +1079,8 @@ function go(id, dir='forward') {
   if (id === 's-bhakt') { initMainMap(); loadBhaktView(); }
   if (id === 's-add')   { startAddWizard(); }
   if (id === 's-dash')  { renderDash(); }
-  if (id === 's-admin') { loadAdmin(); }
+  if (id === 's-admin') { loadAdmin(false); }
+  if (id === 's-admin-samitis') { loadAdminUsers(); }
 }
 function goBack() { go(prevScr === curScr ? 's-bhakt' : prevScr, 'back'); }
 
