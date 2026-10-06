@@ -875,7 +875,7 @@ button,a,.bc,.chip{touch-action:manipulation}
 
 <!-- SAMITI DASHBOARD -->
 <div id="s-dash" class="scr">
-  <div class="tb"><button class="tb-bk" onclick="go('s-land','back')">←</button><div class="tb-t">My Dashboard</div><button class="tb-b" id="admin-btn" onclick="go('s-admin')" style="display:none">⚙️ Admin</button><button class="tb-b" onclick="doLogout()" style="margin-left:.4rem">Sign Out</button></div>
+  <div class="tb"><button class="tb-bk" onclick="go('s-land','back')">←</button><div class="tb-t">My Dashboard</div><button class="lang-switch" id="lang-switch-dash" onclick="toggleAppLang()">हिंदी</button><button class="tb-b" id="admin-btn" onclick="go('s-admin')" style="display:none">⚙️ Admin</button><button class="tb-b" onclick="doLogout()" style="margin-left:.4rem">Sign Out</button></div>
   <div class="ab">
     <div class="user-card">
       <div class="u-av" id="dash-av">🏛</div>
@@ -1002,7 +1002,7 @@ button,a,.bc,.chip{touch-action:manipulation}
     <section class="wiz-step" id="wiz-step-3">
       <div class="wiz-title">Location</div><div class="wiz-sub">Use your location for a quick pin, or tap anywhere on the map to adjust it.</div>
       <div class="wiz-loc-actions"><button class="wiz-small" type="button" onclick="requestUserLocation(true,true)">📍 Use My Location</button><button class="wiz-small" type="button" onclick="useLastBhandaraLocation()">📌 Last Location</button></div>
-      <label class="lbl">Event Location * <span style="color:var(--gn);font-size:.72rem;font-weight:600" id="pin-ok"></span></label>
+      <label class="lbl">Event Location *</label><input type="text" class="inp" placeholder="Full address / landmark" id="a-addr"><label class="lbl">Map Pin <span style="color:var(--gn);font-size:.72rem;font-weight:600" id="pin-ok"></span></label>
       <div class="pin-map-wrap"><div id="add-map"></div><div class="pin-hint" id="pin-hint">👆 Tap map to drop your pin</div></div>
       <div id="wiz-location-text" class="wiz-tip">No location selected yet.</div>
       <div class="wiz-nav"><button class="wiz-back" type="button" onclick="prevAddStep()">← Back</button><button class="wiz-next" type="button" onclick="nextAddStep()">Continue →</button></div>
@@ -1360,6 +1360,7 @@ async function loadBhaktView() {
             ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
             <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
             <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
+            <span class="tag t-pu">${b.event_type==='maha_aarti'?'🪔 Maha Aarti':b.event_type==='maha_aarti_bhandara'?'🙏 Maha Aarti + Bhandara':'🍛 Bhandara'}</span>
           </div>
         </div>
       </div>`).join('');
@@ -1373,7 +1374,7 @@ async function loadBhaktView() {
     return;
   }
   const today=new Date().toISOString().split('T')[0];
-  const { data, error } = await sb.from('bhandaras').select('id,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('status','approved').gte('event_date',today).order('event_date',{ascending:true});
+  const { data, error } = await sb.from('bhandaras').select('id,event_type,sahyog,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('status','approved').gte('event_date',today).order('event_date',{ascending:true});
   if (error) {
     document.getElementById('chip-row').textContent='Could not load nearby Bhandaras.';
     document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not load Bhandaras</div><div class="empty-s">'+esc(error.message)+'</div></div>';
@@ -1395,6 +1396,7 @@ async function loadBhaktView() {
             ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
             <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
             <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
+            <span class="tag t-pu">${b.event_type==='maha_aarti'?'🪔 Maha Aarti':b.event_type==='maha_aarti_bhandara'?'🙏 Maha Aarti + Bhandara':'🍛 Bhandara'}</span>
           </div>
         </div>
       </div>`).join('');
@@ -1508,18 +1510,18 @@ function bindOpenSwipeGesture(){
 
 // ── DETAIL ───────────────────────────────────────────────────
 async function openDetail(id) {
-  const {data}=await sb.from('bhandaras').select('id,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('id',id).single();
+  const {data}=await sb.from('bhandaras').select('id,event_type,sahyog,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('id',id).single();
   if (!data) { toast('Could not load details'); return; }
   curBhandara=data;
   document.getElementById('d-tb').textContent=data.name;
   document.getElementById('d-hero').style.background='linear-gradient(135deg,'+gradFor(data.emoji)+')';
   document.getElementById('d-emoji').textContent=data.emoji||'🪔';
   document.getElementById('d-name').textContent=data.name;
-  document.getElementById('d-org').innerHTML=esc(data.samiti_name||'')+(data.samiti_verified?' <span class="verified-badge">✓ Verified Samiti</span>':'');
+  document.getElementById('d-org').innerHTML=esc(data.samiti_name||'')+(data.samiti_verified?' <span class="verified-badge">✓ Verified Samiti</span>':'')+' <span class="tag t-pu">'+esc(data.event_type==='maha_aarti'?'🪔 Maha Aarti':data.event_type==='maha_aarti_bhandara'?'🙏 Maha Aarti + Bhandara':'🍛 Bhandara')+'</span>';
   document.getElementById('d-loc').textContent=data.address||'';
   document.getElementById('d-time').textContent=(data.start_time||'')+' – '+(data.end_time||'')+(data.event_date?' · '+fmtDate(data.event_date):'');
-  document.getElementById('d-sp').textContent=data.sponsor||'Not specified';
-  document.getElementById('d-menu').textContent=data.menu||'Not specified';
+  document.getElementById('d-sp').textContent=data.event_type==='maha_aarti'?(data.sahyog||'Not specified'):(data.sponsor||'Not specified');
+  document.getElementById('d-menu').textContent=data.event_type==='maha_aarti'?'Maha Aarti':(data.menu||'Not specified');
   document.getElementById('d-msg').textContent=data.message||'All devotees are warmly welcome.';
   const mapBtn=document.getElementById('d-map-btn');
   const live=isLive(data);
@@ -1542,7 +1544,7 @@ async function renderDash() {
   document.getElementById('dash-verified').innerHTML = curMeta.verified ? '<span class="verified-badge">✓ Verified Samiti</span>' : '';
   document.getElementById('admin-btn').style.display = isAdmin ? 'block':'none';
 
-  const { data } = await sb.from('bhandaras').select('id,name,emoji,event_date,start_time,end_time,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  const { data } = await sb.from('bhandaras').select('id,event_type,sahyog,name,emoji,event_date,start_time,end_time,status,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false});
   const mine=data||[];
   document.getElementById('stat-total').textContent=mine.length;
   document.getElementById('stat-live').textContent=mine.filter(isLive).length;
@@ -1566,7 +1568,7 @@ async function renderDash() {
 // ── ADMIN PANEL ──────────────────────────────────────────────
 async function loadAdmin(loadUsers=true) {
   if (!isAdmin) { toast('Access denied'); go('s-dash','back'); return; }
-  const { data } = await sb.from('bhandaras').select('id,name,samiti_name,area,address,start_time,end_time,event_date,emoji,menu,sponsor,samiti_phone,samiti_email,status,created_at').order('created_at',{ascending:false});
+  const { data } = await sb.from('bhandaras').select('id,event_type,sahyog,name,samiti_name,area,address,start_time,end_time,event_date,emoji,menu,sponsor,samiti_phone,samiti_email,status,created_at').order('created_at',{ascending:false});
   const all = data||[];
   const pending  = all.filter(b=>b.status==='pending');
   const approved = all.filter(b=>b.status==='approved');
@@ -1584,13 +1586,16 @@ async function loadAdmin(loadUsers=true) {
         <div class="tag-row">
           ${b.status==='pending'?'<span class="tag t-gld">⏳ Pending</span>':b.status==='approved'?'<span class="tag t-live">✅ Approved</span>':'<span class="tag t-cr">❌ Rejected</span>'}
           <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
+            <span class="tag t-pu">${b.event_type==='maha_aarti'?'🪔 Maha Aarti':b.event_type==='maha_aarti_bhandara'?'🙏 Maha Aarti + Bhandara':'🍛 Bhandara'}</span>
         </div>
       </div>
       <div class="pc-details">
+        <div class="pc-row"><span>Type</span><span>${b.event_type==='maha_aarti'?'Maha Aarti':b.event_type==='maha_aarti_bhandara'?'Maha Aarti + Bhandara':'Bhandara'}</span></div>
         <div class="pc-row"><span>Address</span><span>${esc(b.address||'–')}</span></div>
         <div class="pc-row"><span>Time</span><span>${esc(b.start_time||'')} – ${esc(b.end_time||'')}</span></div>
         <div class="pc-row"><span>Menu</span><span>${esc(b.menu||'–')}</span></div>
         <div class="pc-row"><span>Sponsor</span><span>${esc(b.sponsor||'–')}</span></div>
+        <div class="pc-row"><span>Sahyog</span><span>${esc(b.sahyog||'–')}</span></div>
         <div class="pc-row"><span>Phone</span><span>${esc(b.samiti_phone||'–')}</span></div>
         <div class="pc-row"><span>Email</span><span>${esc(b.samiti_email||'–')}</span></div>
       </div>
@@ -1679,6 +1684,23 @@ async function updateStatus(id, status) {
 let addWizardStep=1;
 const ADD_UPI_KEY='prashad_lelo_saved_upi_v1', ADD_LOC_KEY='prashad_lelo_last_location_v1', ADD_FORM_KEY='prashad_lelo_bhandara_defaults_v1';
 
+let addEventType='bhandara';
+function getEventType(){return document.querySelector('input[name="event-type"]:checked')?.value||addEventType||'bhandara';}
+function setEventType(type){
+  addEventType=type;
+  document.querySelectorAll('.event-type-opt').forEach(el=>el.classList.toggle('on',el.querySelector('input')?.value===type));
+  const isB=type!=='maha_aarti',isA=type!=='bhandara';
+  const bf=document.getElementById('bhandara-fields'),af=document.getElementById('aarti-fields');
+  if(bf)bf.style.display=isB?'block':'none';if(af)af.style.display=isA?'block':'none';
+  const mark=document.getElementById('upi-required-mark'),upi=document.getElementById('a-upi');
+  if(mark)mark.style.display=isB?'inline':'none';if(upi)upi.placeholder=isB?'samiti@upi':'Optional for Maha Aarti';
+  const e=document.getElementById('a-emoji');if(e&&type==='maha_aarti'&&e.value==='🍛')e.value='🪔';
+  updateAddMode();updateAddPreview();
+}
+function bindEventMessageCounter(){
+  const el=document.getElementById('a-msg'),count=document.getElementById('msg-count');
+  if(el&&!el.dataset.counterBound){el.addEventListener('input',()=>{if(count)count.textContent=el.value.length;});el.dataset.counterBound='1';}
+}
 function updateAddMode(){
   const verified=!!curMeta.verified, notice=document.getElementById('add-notice'), btn=document.getElementById('pub-btn');
   if(!notice||!btn)return;
@@ -1692,8 +1714,10 @@ function startAddWizard(){
   let saved={};try{saved=JSON.parse(localStorage.getItem(ADD_FORM_KEY)||'{}')}catch(e){}
   const set=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.value=val};
   set('wiz-samiti',saved.samiti_name||curMeta.samiti_name||'');set('wiz-contact',saved.full_name||curMeta.full_name||currentUser?.email||'');set('wiz-phone',saved.phone||curMeta.phone||'');set('wiz-area',saved.area||curMeta.area||'Jabalpur');set('wiz-email',saved.email||currentUser?.email||curMeta.email||'');
-  ['a-name','a-addr','a-menu','a-sp','a-msg'].forEach(id=>set(id,saved[id]||''));
+  ['a-name','a-addr','a-menu','a-sp','a-sahyog','a-msg'].forEach(id=>set(id,saved[id]||''));
   if(saved.date)set('a-date',saved.date);if(saved.start)set('a-start',saved.start);if(saved.end)set('a-end',saved.end);if(saved.emoji)set('a-emoji',saved.emoji);
+  if(saved.event_type){addEventType=saved.event_type;const r=document.querySelector('input[name="event-type"][value="'+saved.event_type+'"]');if(r)r.checked=true;}
+  setEventType(addEventType);bindEventMessageCounter();
   bindAddMemory();updateAddMode();const upi=localStorage.getItem(ADD_UPI_KEY);if(upi&&!document.getElementById('a-upi').value)document.getElementById('a-upi').value=upi;renderAddWizard();
 }
 function renderAddWizard(){
@@ -1702,8 +1726,8 @@ function renderAddWizard(){
   if(addWizardStep===4)updateAddPreview();window.scrollTo(0,0);
 }
 function saveBhandaraFormMemory(){
-  const ids=['a-name','a-addr','a-menu','a-sp','a-msg'];
-  const data={samiti_name:document.getElementById('wiz-samiti')?.value.trim(),full_name:document.getElementById('wiz-contact')?.value.trim(),phone:document.getElementById('wiz-phone')?.value.trim(),area:document.getElementById('wiz-area')?.value.trim(),email:document.getElementById('wiz-email')?.value.trim()};
+  const ids=['a-name','a-addr','a-menu','a-sp','a-sahyog','a-msg'];
+  const data={event_type:getEventType(),samiti_name:document.getElementById('wiz-samiti')?.value.trim(),full_name:document.getElementById('wiz-contact')?.value.trim(),phone:document.getElementById('wiz-phone')?.value.trim(),area:document.getElementById('wiz-area')?.value.trim(),email:document.getElementById('wiz-email')?.value.trim()};
   ids.forEach(id=>{const el=document.getElementById(id);if(el&&el.value.trim())data[id]=el.value.trim()});
   ['a-date','a-start','a-end','a-emoji'].forEach(id=>{const el=document.getElementById(id);if(el&&el.value)data[id]=el.value});
   try{localStorage.setItem(ADD_FORM_KEY,JSON.stringify(data))}catch(e){}
@@ -1715,9 +1739,9 @@ function bindAddMemory(){
 }
 function validateAddStep(step){
   const err=document.getElementById('add-err');err.style.display='none';
-  if(step===2){const name=document.getElementById('a-name').value.trim(),addr=document.getElementById('a-addr').value.trim(),date=document.getElementById('a-date').value,start=document.getElementById('a-start').value,end=document.getElementById('a-end').value;if(!name||!addr||!date||!start||!end){err.textContent='Please fill the required Bhandara details.';err.style.display='block';return false}if(end<=start){err.textContent='End time should be after start time.';err.style.display='block';return false}}
+  if(step===2){const name=document.getElementById('a-name').value.trim(),date=document.getElementById('a-date').value,start=document.getElementById('a-start').value,end=document.getElementById('a-end').value;if(!name||!date||!start||!end){err.textContent='Please fill the required event details.';err.style.display='block';return false}if(end<=start){err.textContent='End time should be after start time.';err.style.display='block';return false}}
   if(step===3&&!pinnedLatLng){err.textContent='Please select the Bhandara location on the map.';err.style.display='block';return false}
-  if(step===4){const upi=document.getElementById('a-upi').value.trim();if(!upi){err.textContent='Please enter the donation UPI ID.';err.style.display='block';return false}if(!/^[^\s@]+@[^\s@]+$/.test(upi)){err.textContent='Enter a valid UPI ID, for example samiti@upi.';err.style.display='block';return false}}
+  if(step===4){const upi=document.getElementById('a-upi').value.trim(),isB=getEventType()!=='maha_aarti';if(isB&&!upi){err.textContent='Please enter the donation UPI ID.';err.style.display='block';return false}if(!/^[^\s@]+@[^\s@]+$/.test(upi)){err.textContent='Enter a valid UPI ID, for example samiti@upi.';err.style.display='block';return false}}
   return true;
 }
 function nextAddStep(){if(!validateAddStep(addWizardStep))return;if(addWizardStep<4){addWizardStep++;renderAddWizard()}}
@@ -1728,15 +1752,15 @@ function saveBhandaraDraftMemory(){const upi=document.getElementById('a-upi')?.v
 function useLastBhandaraLocation(){try{const loc=JSON.parse(localStorage.getItem(ADD_LOC_KEY)||'null');if(!loc||!Number.isFinite(Number(loc.lat))||!Number.isFinite(Number(loc.lng))){toast('No previous location saved yet');return}pinLocation(Number(loc.lat),Number(loc.lng),loc.label||'Last saved location')}catch(e){toast('Could not restore the last location')}}
 function pinLocation(lat,lng,label){pinnedLatLng={lat,lng};if(!addMapInst)return;if(addMarker)addMarker.remove();addMarker=L.marker([lat,lng]).addTo(addMapInst);addMapInst.setView([lat,lng],15);const h=document.getElementById('pin-hint');h.textContent='✅ Pinned: '+lat.toFixed(5)+', '+lng.toFixed(5);h.classList.add('done');document.getElementById('pin-ok').textContent='✓';updateLocationText(label||'Selected location')}
 function updateLocationText(label){const el=document.getElementById('wiz-location-text');if(!el)return;if(!pinnedLatLng){el.textContent='No location selected yet.';return}el.textContent=(label||'Selected location')+' · '+Number(pinnedLatLng.lat).toFixed(5)+', '+Number(pinnedLatLng.lng).toFixed(5)}
-function updateAddPreview(){const v=id=>document.getElementById(id)?.value.trim()||'–';document.getElementById('prev-emoji').textContent=document.getElementById('a-emoji').value||'🍛';document.getElementById('prev-name').textContent=v('a-name')==='–'?'Your Bhandara':v('a-name');document.getElementById('prev-org').textContent=curMeta.samiti_name||'Your Samiti';document.getElementById('prev-date').textContent=v('a-date')==='–'?'–':fmtDate(v('a-date'));document.getElementById('prev-time').textContent=v('a-start')+' – '+v('a-end');document.getElementById('prev-addr').textContent=v('a-addr');document.getElementById('prev-menu').textContent=v('a-menu');document.getElementById('prev-sp').textContent=v('a-sp');document.getElementById('prev-upi').textContent=v('a-upi')}
+function updateAddPreview(){const v=id=>document.getElementById(id)?.value.trim()||'–',type=getEventType(),isB=type!=='maha_aarti',isA=type!=='bhandara';document.getElementById('prev-emoji').textContent=document.getElementById('a-emoji').value||'🍛';document.getElementById('prev-name').textContent=v('a-name')==='–'?'Your Event':v('a-name');document.getElementById('prev-org').textContent=(curMeta.samiti_name||'Your Samiti')+' · '+(type==='bhandara'?'Bhandara':type==='maha_aarti'?'Maha Aarti':'Maha Aarti + Bhandara');document.getElementById('prev-date').textContent=v('a-date')==='–'?'–':fmtDate(v('a-date'));document.getElementById('prev-time').textContent=v('a-start')+' – '+v('a-end');document.getElementById('prev-addr').textContent=v('a-addr');document.getElementById('prev-menu').textContent=v('a-menu');document.getElementById('prev-sp').textContent=v('a-sp');document.getElementById('prev-sahyog').textContent=v('a-sahyog');document.getElementById('prev-upi').textContent=v('a-upi');document.getElementById('prev-menu-row').style.display=isB?'flex':'none';document.getElementById('prev-sp-row').style.display=isB?'flex':'none';document.getElementById('prev-sahyog-row').style.display=isA?'flex':'none';}
 async function submitBhandara(){
   const errEl=document.getElementById('add-err');errEl.style.display='none';if(!validateAddStep(2)||!validateAddStep(3)||!validateAddStep(4))return;
-  const name=document.getElementById('a-name').value.trim(),addr=document.getElementById('a-addr').value.trim(),start=document.getElementById('a-start').value,end=document.getElementById('a-end').value,date=document.getElementById('a-date').value,menu=document.getElementById('a-menu').value.trim(),sp=document.getElementById('a-sp').value.trim(),upiId=document.getElementById('a-upi').value.trim(),emoji=document.getElementById('a-emoji').value,msg=document.getElementById('a-msg').value.trim(),samitiName=document.getElementById('wiz-samiti').value.trim(),contactName=document.getElementById('wiz-contact').value.trim(),phone=String(document.getElementById('wiz-phone').value.trim());
+  const eventType=getEventType(),sahyog=document.getElementById('a-sahyog').value.trim(),name=document.getElementById('a-name').value.trim(),addr=document.getElementById('a-addr').value.trim(),start=document.getElementById('a-start').value,end=document.getElementById('a-end').value,date=document.getElementById('a-date').value,menu=document.getElementById('a-menu').value.trim(),sp=document.getElementById('a-sp').value.trim(),upiId=document.getElementById('a-upi').value.trim(),emoji=document.getElementById('a-emoji').value,msg=document.getElementById('a-msg').value.trim(),samitiName=document.getElementById('wiz-samiti').value.trim(),contactName=document.getElementById('wiz-contact').value.trim(),phone=String(document.getElementById('wiz-phone').value.trim());
   if(!samitiName){errEl.textContent='Please enter the Samiti name.';errEl.style.display='block';addWizardStep=1;renderAddWizard();return}if(!/^\d{10}$/.test(phone)){errEl.textContent='Your Samiti account does not have a valid 10-digit mobile number. Please update your profile.';errEl.style.display='block';addWizardStep=1;renderAddWizard();return}
   const btn=document.getElementById('pub-btn');btn.disabled=true;btn.innerHTML='🙏 Jai Mata Di…';
-  try{const {error}=await sb.from('bhandaras').insert({name,samiti_name:samitiName||'Samiti',samiti_phone:phone,address:addr,area:curMeta.area||'Jabalpur',samiti_email:currentUser.email,user_id:currentUser.id,lat:pinnedLatLng.lat,lng:pinnedLatLng.lng,start_time:start,end_time:end,event_date:date,menu,sponsor:sp,upi_id:upiId,emoji,message:msg,status:curMeta.verified?'approved':'pending',samiti_verified:!!curMeta.verified});if(error)throw error}catch(error){errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara');errEl.style.display='block';btn.disabled=false;updateAddMode();return}
+  try{const {error}=await sb.from('bhandaras').insert({event_type:eventType,sahyog,name,samiti_name:samitiName||'Samiti',samiti_phone:phone,address:addr,area:curMeta.area||'Jabalpur',samiti_email:currentUser.email,user_id:currentUser.id,lat:pinnedLatLng.lat,lng:pinnedLatLng.lng,start_time:start,end_time:end,event_date:date,menu,sponsor:sp,upi_id:upiId,emoji,message:msg,status:curMeta.verified?'approved':'pending',samiti_verified:!!curMeta.verified});if(error)throw error}catch(error){errEl.textContent='Error: '+(error?.message||'Could not submit this Bhandara');errEl.style.display='block';btn.disabled=false;updateAddMode();return}
   saveBhandaraFormMemory();localStorage.setItem(ADD_UPI_KEY,upiId);localStorage.setItem(ADD_LOC_KEY,JSON.stringify({lat:Number(pinnedLatLng.lat),lng:Number(pinnedLatLng.lng),label:addr}));btn.disabled=false;updateAddMode();
-  ['a-name','a-addr','a-menu','a-sp','a-upi','a-msg'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});document.getElementById('a-date').value='';document.getElementById('a-start').value='12:00';document.getElementById('a-end').value='20:00';pinnedLatLng=null;if(addMarker){addMarker.remove();addMarker=null}document.getElementById('pin-hint').textContent='👆 Tap map to drop your pin';document.getElementById('pin-hint').classList.remove('done');document.getElementById('pin-ok').textContent='';addWizardStep=1;toast(curMeta.verified?'🙏 Jai Mata Di! Bhandara published.':'🙏 Jai Mata Di! Bhandara submitted for admin approval.');go('s-dash','back');
+  ['a-name','a-addr','a-menu','a-sp','a-sahyog','a-upi','a-msg'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});document.getElementById('a-date').value='';document.getElementById('a-start').value='12:00';document.getElementById('a-end').value='20:00';pinnedLatLng=null;if(addMarker){addMarker.remove();addMarker=null}document.getElementById('pin-hint').textContent='👆 Tap map to drop your pin';document.getElementById('pin-hint').classList.remove('done');document.getElementById('pin-ok').textContent='';addWizardStep=1;toast(curMeta.verified?'🙏 Jai Mata Di! Event published.':'🙏 Jai Mata Di! Event submitted for admin approval.');go('s-dash','back');
 }
 async function removeBhandara(id) {
   if (!isAdmin) { toast('Admin access required'); return; }
@@ -1774,7 +1798,25 @@ function payNow(){
 document.getElementById('don-ov').addEventListener('click',e=>{if(e.target===document.getElementById('don-ov'))closeDon();});
 document.getElementById('don-ov').addEventListener('click',e=>{if(e.target===document.getElementById('don-ov'))closeDon();});
 
-setInterval(renderOpenBhandaraSwipeCard,30000);
+const APP_LANG_KEY='prashad_lelo_lang_v1';
+let appLang=localStorage.getItem(APP_LANG_KEY)||'en';
+function setAppLang(lang){appLang=lang==='hi'?'hi':'en';try{localStorage.setItem(APP_LANG_KEY,appLang)}catch(e){}applyAppLanguage();}
+function toggleAppLang(){setAppLang(appLang==='en'?'hi':'en');}
+function applyAppLanguage(){
+  document.documentElement.lang=appLang==='hi'?'hi':'en';
+  const en=document.getElementById('lang-en'),hi=document.getElementById('lang-hi');
+  if(en)en.classList.toggle('on',appLang==='en');if(hi)hi.classList.toggle('on',appLang==='hi');
+  const sw=appLang==='en'?'हिंदी':'English';
+  ['lang-switch-dash','lang-switch-add'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=sw});
+  const d=document.querySelector('#s-dash .tb-t');if(d)d.textContent=appLang==='hi'?'मेरा डैशबोर्ड':'My Dashboard';
+  const a=document.querySelector('#s-add .tb-t');if(a)a.textContent=appLang==='hi'?'कार्यक्रम जोड़ें':'Add Event';
+  const rb=document.querySelector('#t-reg #reg-btn');if(rb)rb.textContent=appLang==='hi'?'खाता बनाएँ':'Create Account';
+  const lb=document.querySelector('#t-login #login-btn');if(lb)lb.textContent=appLang==='hi'?'डैशबोर्ड में लॉगिन':'Login to Dashboard';
+  const labs=document.querySelectorAll('#t-reg .lbl'),map=appLang==='hi'?['समिति / संस्था का नाम','आपका नाम','मोबाइल नंबर','क्षेत्र / मोहल्ला','ईमेल पता','पासवर्ड','पासवर्ड दोबारा']:['Samiti / Organisation Name','Your Name','Mobile Number','Area / Locality','Email Address','Password','Confirm Password'];
+  labs.forEach((el,i)=>{if(map[i])el.textContent=map[i]});
+}
+
+applyAppLanguage();
 init();
 </script>
 </body>
