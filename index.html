@@ -1802,19 +1802,46 @@ const APP_LANG_KEY='prashad_lelo_lang_v1';
 let appLang=localStorage.getItem(APP_LANG_KEY)||'en';
 function setAppLang(lang){appLang=lang==='hi'?'hi':'en';try{localStorage.setItem(APP_LANG_KEY,appLang)}catch(e){}applyAppLanguage();}
 function toggleAppLang(){setAppLang(appLang==='en'?'hi':'en');}
-function applyAppLanguage(){
-  document.documentElement.lang=appLang==='hi'?'hi':'en';
-  const en=document.getElementById('lang-en'),hi=document.getElementById('lang-hi');
-  if(en)en.classList.toggle('on',appLang==='en');if(hi)hi.classList.toggle('on',appLang==='hi');
+const langObserver=new MutationObserver(()=>{if(appLang==='hi')translateSamitiPage();});
+langObserver.observe(document.getElementById('s-auth'),{childList:true,subtree:true});
+langObserver.observe(document.getElementById('s-dash'),{childList:true,subtree:true});
+langObserver.observe(document.getElementById('s-add'),{childList:true,subtree:true});
+const LANG_MAP={
+"Samiti Portal":"समिति पोर्टल","Login":"लॉगिन","Register":"रजिस्टर","Email Address":"ईमेल पता","Password":"पासवर्ड","Create Account":"खाता बनाएँ","Login to Dashboard":"डैशबोर्ड में लॉगिन","Confirm Password":"पासवर्ड दोबारा","Mobile Number":"मोबाइल नंबर","Area / Locality":"क्षेत्र / मोहल्ला","Samiti / Organisation Name":"समिति / संस्था का नाम","Your Name":"आपका नाम","Already registered?":"पहले से रजिस्टर हैं?","Login here":"यहाँ लॉगिन करें","My Dashboard":"मेरा डैशबोर्ड","Sign Out":"लॉग आउट","My Bhandaras":"मेरे भंडारे","Total listed":"कुल सूचीबद्ध","Active Now":"अभी सक्रिय","Live":"लाइव","Bhandara / Samiti contact":"भंडारा / समिति संपर्क","Call":"कॉल","WhatsApp":"व्हाट्सऐप","Add New Bhandara":"भंडारा / महाआरती जोड़ें","My Dashboard":"मेरा डैशबोर्ड","My Bhandaras":"मेरे भंडारे","Add Event":"भंडारा / महाआरती जोड़ें","Samiti Details":"समिति विवरण","Event Details":"कार्यक्रम विवरण","Location":"स्थान","Final Preview":"अंतिम पूर्वावलोकन","Continue →":"आगे →","← Back":"← वापस","Event Name *":"कार्यक्रम का नाम *","Date *":"दिनांक *","Start Time *":"प्रारंभ समय *","End Time *":"समाप्ति समय *","What are you organising? *":"आप क्या आयोजित कर रहे हैं? *","Bhandara":"भंडारा","Maha Aarti":"महाआरती","Maha Aarti + Bhandara":"महाआरती + भंडारा","Prasad / Menu":"प्रसाद / मेनू","Sponsored By":"प्रायोजक","Sahyog":"सहयोग","Short Message":"संक्षिप्त संदेश","Event Location *":"कार्यक्रम का स्थान *","Map Pin":"मानचित्र स्थान","Donation UPI ID":"दान UPI ID","Review the event before publishing.":"प्रकाशित करने से पहले कार्यक्रम की जाँच करें।","Select your language":"अपनी भाषा चुनिए","Select your language / भाषा चुनिए":"अपनी भाषा चुनिए / Select your language","English":"अंग्रेज़ी","Hindi":"हिंदी","Jai Mata Di":"जय माता दी"};
+function translateSamitiPage(){
+  const roots=['s-auth','s-dash','s-add'];
+  roots.forEach(id=>{
+    const root=document.getElementById(id); if(!root)return;
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const nodes=[]; while(walker.nextNode())nodes.push(walker.currentNode);
+    nodes.forEach(n=>{
+      if(!n.parentElement || ['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(n.parentElement.tagName))return;
+      const raw=n.nodeValue.trim(); if(!raw)return;
+      const key=raw.replace(/\s+/g,' ');
+      if(appLang==='hi' && LANG_MAP[key]){
+        n.nodeValue=n.nodeValue.replace(raw,LANG_MAP[key]);
+      }else if(appLang==='en'){
+        const hi=Object.entries(LANG_MAP).find(([en,hi])=>hi===key);
+        if(hi)n.nodeValue=n.nodeValue.replace(raw,hi[0]);
+      }
+    });
+    root.querySelectorAll('input,textarea').forEach(el=>{
+      const p=el.getAttribute('placeholder');
+      if(!el.dataset.enPlaceholder && p)el.dataset.enPlaceholder=p;
+      const ep=el.dataset.enPlaceholder;
+      if(appLang==='hi'){
+        const ph={"Email Address":"ईमेल पता","Password":"पासवर्ड","Confirm Password":"पासवर्ड दोबारा","10-digit mobile":"10 अंकों का मोबाइल नंबर","Area":"क्षेत्र","Samiti name":"समिति का नाम","Contact person":"संपर्क व्यक्ति","Email":"ईमेल","Full address / landmark":"पूरा पता / स्थान","e.g. Shri Ram Seva Samiti":"उदा. श्री राम सेवा समिति","Full name":"पूरा नाम","e.g. Rani Tal, Jabalpur":"उदा. रानी ताल, जबलपुर"}[ep];if(ph)el.placeholder=ph;
+      }else if(ep)el.placeholder=ep;
+    });
+  });
   const sw=appLang==='en'?'हिंदी':'English';
   ['lang-switch-dash','lang-switch-add'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=sw});
-  const d=document.querySelector('#s-dash .tb-t');if(d)d.textContent=appLang==='hi'?'मेरा डैशबोर्ड':'My Dashboard';
-  const a=document.querySelector('#s-add .tb-t');if(a)a.textContent=appLang==='hi'?'कार्यक्रम जोड़ें':'Add Event';
-  const rb=document.querySelector('#t-reg #reg-btn');if(rb)rb.textContent=appLang==='hi'?'खाता बनाएँ':'Create Account';
-  const lb=document.querySelector('#t-login #login-btn');if(lb)lb.textContent=appLang==='hi'?'डैशबोर्ड में लॉगिन':'Login to Dashboard';
-  const labs=document.querySelectorAll('#t-reg .lbl'),map=appLang==='hi'?['समिति / संस्था का नाम','आपका नाम','मोबाइल नंबर','क्षेत्र / मोहल्ला','ईमेल पता','पासवर्ड','पासवर्ड दोबारा']:['Samiti / Organisation Name','Your Name','Mobile Number','Area / Locality','Email Address','Password','Confirm Password'];
-  labs.forEach((el,i)=>{if(map[i])el.textContent=map[i]});
+  const rb=document.getElementById('reg-btn');if(rb)rb.textContent=appLang==='hi'?'खाता बनाएँ':'Create Account';
+  const lb=document.getElementById('login-btn');if(lb)lb.textContent=appLang==='hi'?'डैशबोर्ड में लॉगिन':'Login to Dashboard';
+  const add=document.querySelector('.btn-add');if(add)add.textContent=appLang==='hi'?'➕ भंडारा / महाआरती जोड़ें':'➕ Add Bhandara / Maha Aarti';
 }
+function applyAppLanguage(){document.documentElement.lang=appLang==='hi'?'hi':'en';const en=document.getElementById('lang-en'),hi=document.getElementById('lang-hi');if(en)en.classList.toggle('on',appLang==='en');if(hi)hi.classList.toggle('on',appLang==='hi');translateSamitiPage();}
+
 
 applyAppLanguage();
 init();
