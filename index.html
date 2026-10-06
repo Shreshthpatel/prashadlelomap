@@ -833,7 +833,7 @@ button,a,.bc,.chip{touch-action:manipulation}
     <div class="tb-b">Jabalpur</div>
   </div>
   <div class="near-s">
-    <div class="slbl">📍 Nearby Bhandaras</div>
+    <div class="slbl">📍 Nearby Seva & Events</div>
     <div class="chip-row" id="chip-row"><div style="font-size:.8rem;color:var(--t3);padding:.4rem 0">Loading...</div></div>
   </div>
   <div class="map-wrap">
@@ -1349,7 +1349,7 @@ async function loadBhaktView() {
   if (bhaktLoadedAt && nowMs-bhaktLoadedAt < 60000) {
     renderNearbyChips();
     document.getElementById('bhakt-list').innerHTML = bhandaraItems.length===0
-      ? '<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Bhandaras right now. Check back soon!</div></div>'
+      ? '<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Seva & Events right now. Check back soon!</div></div>'
       : bhandaraItems.map(b=>`
       <div class="bc" onclick="openDetail('${b.id}')">
         <div class="bc-img" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
@@ -1376,8 +1376,8 @@ async function loadBhaktView() {
   const today=new Date().toISOString().split('T')[0];
   const { data, error } = await sb.from('bhandaras').select('id,event_type,sahyog,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('status','approved').gte('event_date',today).order('event_date',{ascending:true});
   if (error) {
-    document.getElementById('chip-row').textContent='Could not load nearby Bhandaras.';
-    document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not load Bhandaras</div><div class="empty-s">'+esc(error.message)+'</div></div>';
+    document.getElementById('chip-row').textContent='Could not load nearby Seva & Events.';
+    document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not load Seva & Events</div><div class="empty-s">'+esc(error.message)+'</div></div>';
     return;
   }
   const items = data||[];
@@ -1705,9 +1705,9 @@ function updateAddMode(){
   const verified=!!curMeta.verified, notice=document.getElementById('add-notice'), btn=document.getElementById('pub-btn');
   if(!notice||!btn)return;
   notice.classList.toggle('verified',verified);
-  notice.innerHTML=verified?'✅ Your Samiti is <strong>Verified</strong>. This Bhandara can be published immediately.':'⏳ This Bhandara will be <strong>reviewed by admin</strong> before appearing on the map.';
+  notice.innerHTML=verified?'✅ Your Samiti is <strong>Verified</strong>. This event can be published immediately.':'⏳ This event will be <strong>reviewed by admin</strong> before appearing on the map.';
   btn.innerHTML='🙏 Jai Mata Di — '+(verified?'Publish':'Submit for Approval');
-  document.getElementById('wiz-publish-note').textContent=verified?'Your verified Samiti can publish directly.':'After submission, admin will review the Bhandara before it becomes public.';
+  document.getElementById('wiz-publish-note').textContent=verified?'Your verified Samiti can publish directly.':'After submission, admin will review the event before it becomes public.';
 }
 function startAddWizard(){
   addWizardStep=1;document.getElementById('add-err').style.display='none';
@@ -1733,14 +1733,14 @@ function saveBhandaraFormMemory(){
   try{localStorage.setItem(ADD_FORM_KEY,JSON.stringify(data))}catch(e){}
 }
 function bindAddMemory(){
-  ['wiz-samiti','wiz-contact','wiz-phone','wiz-area','wiz-email','a-name','a-addr','a-menu','a-sp','a-msg','a-date','a-start','a-end','a-emoji'].forEach(id=>{
+  ['wiz-samiti','wiz-contact','wiz-phone','wiz-area','wiz-email','a-name','a-addr','a-menu','a-sp','a-sahyog','a-msg','a-date','a-start','a-end','a-emoji'].forEach(id=>{
     const el=document.getElementById(id);if(el&&!el.dataset.memoryBound){el.addEventListener('input',saveBhandaraFormMemory);el.addEventListener('change',saveBhandaraFormMemory);el.dataset.memoryBound='1'}
   });
 }
 function validateAddStep(step){
   const err=document.getElementById('add-err');err.style.display='none';
   if(step===2){const name=document.getElementById('a-name').value.trim(),date=document.getElementById('a-date').value,start=document.getElementById('a-start').value,end=document.getElementById('a-end').value;if(!name||!date||!start||!end){err.textContent='Please fill the required event details.';err.style.display='block';return false}if(end<=start){err.textContent='End time should be after start time.';err.style.display='block';return false}}
-  if(step===3&&!pinnedLatLng){err.textContent='Please select the Bhandara location on the map.';err.style.display='block';return false}
+  if(step===3){const addr=document.getElementById('a-addr').value.trim();if(!addr){err.textContent='Please enter the event address.';err.style.display='block';return false}if(!pinnedLatLng){err.textContent='Please select the event location on the map.';err.style.display='block';return false}}
   if(step===4){const upi=document.getElementById('a-upi').value.trim(),isB=getEventType()!=='maha_aarti';if(isB&&!upi){err.textContent='Please enter the donation UPI ID.';err.style.display='block';return false}if(!/^[^\s@]+@[^\s@]+$/.test(upi)){err.textContent='Enter a valid UPI ID, for example samiti@upi.';err.style.display='block';return false}}
   return true;
 }
