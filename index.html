@@ -736,6 +736,8 @@ button,a,.bc,.chip{touch-action:manipulation}
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
 
+/* LANGUAGE + EVENT TYPE */
+.lang-picker{background:var(--or-ll);border:1px solid rgba(232,98,10,.18);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:1rem}.lang-picker-h{font-size:.78rem;font-weight:800;color:var(--t2);margin-bottom:.6rem;text-align:center}.lang-picker-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}.lang-opt{padding:.7rem;border:1.5px solid var(--bd);border-radius:12px;background:#fff;color:var(--t2);font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer}.lang-opt.on{border-color:var(--or);background:var(--or);color:#fff}.lang-switch{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:5px 9px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}.event-type-grid{display:grid;grid-template-columns:1fr;gap:.55rem;margin-bottom:1rem}.event-type-opt{display:flex;align-items:center;gap:.7rem;padding:.78rem .85rem;border:1.5px solid var(--bd);border-radius:12px;background:#fff;color:var(--t2);font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;text-align:left}.event-type-opt.on{border-color:var(--or);background:var(--or-ll);color:var(--or-d)}.event-type-opt input{accent-color:var(--or)}.field-note{font-size:.72rem;color:var(--t3);margin:-.35rem 0 .75rem;line-height:1.45}
 </style>
 </head>
 <body>
@@ -761,6 +763,7 @@ button,a,.bc,.chip{touch-action:manipulation}
 <div id="s-auth" class="scr">
   <div class="tb"><button class="tb-bk" onclick="go('s-land','back')">←</button><div class="tb-t">Samiti Portal</div></div>
   <div class="ab">
+    <div class="lang-picker" id="auth-lang-picker"><div class="lang-picker-h">भाषा चुनिए / Select your language</div><div class="lang-picker-row"><button type="button" class="lang-opt" id="lang-en" onclick="setAppLang('en')">🇬🇧 English</button><button type="button" class="lang-opt" id="lang-hi" onclick="setAppLang('hi')">🇮🇳 हिंदी</button></div></div>
     <div class="tabs-row">
       <button class="tab on" id="tab-l-btn" onclick="switchTab('login')">Login</button>
       <button class="tab" id="tab-r-btn" onclick="switchTab('register')">Register</button>
@@ -957,7 +960,7 @@ button,a,.bc,.chip{touch-action:manipulation}
 
 <!-- ADD BHANDARA -->
 <div id="s-add" class="scr">
-  <div class="tb"><button class="tb-bk" onclick="go('s-dash','back')">←</button><div class="tb-t">Add Bhandara</div></div>
+  <div class="tb"><button class="tb-bk" onclick="go('s-dash','back')">←</button><div class="tb-t">Add Event</div><button class="lang-switch" id="lang-switch-add" onclick="toggleAppLang()">हिंदी</button></div>
   <div class="ab">
     <div class="wiz-progress" aria-label="Bhandara listing progress"><div class="wiz-p on" id="wiz-p1"></div><div class="wiz-p" id="wiz-p2"></div><div class="wiz-p" id="wiz-p3"></div><div class="wiz-p" id="wiz-p4"></div></div>
     <div id="add-err" class="err"></div>
@@ -971,31 +974,44 @@ button,a,.bc,.chip{touch-action:manipulation}
       <div class="wiz-nav single"><button class="wiz-next" type="button" onclick="nextAddStep()">Continue →</button></div>
     </section>
     <section class="wiz-step" id="wiz-step-2">
-      <div class="wiz-title">Bhandara Details</div><div class="wiz-sub">Tell Bhakts what is being organised and when.</div>
-      <div class="pending-notice" id="add-notice">⏳ Your Bhandara will be reviewed by admin before appearing on the map.</div>
-      <label class="lbl">Bhandara Name *</label><input type="text" class="inp" placeholder="e.g. Shri Ram Maha Bhandara" id="a-name">
-      <label class="lbl">Pandal Address *</label><input type="text" class="inp" placeholder="Full address / landmark" id="a-addr">
-      <div class="two-col"><div><label class="lbl">Start Time *</label><input type="time" class="inp" value="12:00" id="a-start"></div><div><label class="lbl">End Time *</label><input type="time" class="inp" value="20:00" id="a-end"></div></div>
+      <div class="wiz-title">Event Details</div><div class="wiz-sub">Choose what your Samiti is organising, then fill only the relevant details.</div>
+      <div class="pending-notice" id="add-notice">⏳ This event will be reviewed by admin before appearing on the map.</div>
+      <label class="lbl">What are you organising? *</label>
+      <div class="event-type-grid" id="event-type-grid">
+        <label class="event-type-opt on"><input type="radio" name="event-type" value="bhandara" checked onchange="setEventType(this.value)"> 🍛 Bhandara</label>
+        <label class="event-type-opt"><input type="radio" name="event-type" value="maha_aarti" onchange="setEventType(this.value)"> 🪔 Maha Aarti</label>
+        <label class="event-type-opt"><input type="radio" name="event-type" value="maha_aarti_bhandara" onchange="setEventType(this.value)"> 🙏 Maha Aarti + Bhandara</label>
+      </div>
+      <label class="lbl">Event Name *</label><input type="text" class="inp" placeholder="e.g. Shri Ram Maha Bhandara / Maha Aarti" id="a-name">
       <label class="lbl">Date *</label><input type="date" class="inp" id="a-date">
-      <label class="lbl">Prasad / Menu</label><input type="text" class="inp" placeholder="e.g. Halwa Puri, Dal Chawal" id="a-menu">
-      <label class="lbl">Sponsored By</label><input type="text" class="inp" placeholder="Sponsor name (optional)" id="a-sp">
-      <label class="lbl">Icon</label><select class="inp" id="a-emoji"><option value="🍛">🍛 Bhandara / Food</option><option value="🌸">🌸 Puja</option><option value="🪷">🪷 Devi Mata</option><option value="🙏">🙏 Prayer</option><option value="🔱">🔱 Shiva</option><option value="🪔">🪔 Diya</option><option value="🕉️">🕉️ Om</option></select>
-      <label class="lbl">Message for Bhakts</label><textarea class="inp" rows="3" placeholder="All devotees are warmly welcome..." id="a-msg"></textarea>
+      <div class="two-col"><div><label class="lbl">Start Time *</label><input type="time" class="inp" value="12:00" id="a-start"></div><div><label class="lbl">End Time *</label><input type="time" class="inp" value="20:00" id="a-end"></div></div>
+      <div id="bhandara-fields">
+        <label class="lbl">Prasad / Menu</label><input type="text" class="inp" placeholder="e.g. Halwa Puri, Dal Chawal" id="a-menu">
+        <label class="lbl">Sponsored By</label><input type="text" class="inp" placeholder="Sponsor name (optional)" id="a-sp">
+      </div>
+      <div id="aarti-fields" style="display:none">
+        <label class="lbl">Sahyog</label><input type="text" class="inp" placeholder="e.g. Seva sahyog, samagri or volunteer support" id="a-sahyog">
+        <div class="field-note">Tell devotees what kind of support/contribution is welcome.</div>
+      </div>
+      <label class="lbl">Icon</label><select class="inp" id="a-emoji"><option value="🍛">🍛 Bhandara / Food</option><option value="🪔">🪔 Maha Aarti / Diya</option><option value="🌸">🌸 Puja</option><option value="🪷">🪷 Devi Mata</option><option value="🙏">🙏 Prayer</option><option value="🔱">🔱 Shiva</option><option value="🕉️">🕉️ Om</option></select>
+      <label class="lbl">Short Message <span style="font-weight:500;color:var(--t3)">(max 240 characters)</span></label>
+      <textarea class="inp" rows="3" maxlength="240" placeholder="A short message for Bhakts..." id="a-msg"></textarea>
+      <div class="field-note"><span id="msg-count">0</span>/240 characters</div>
       <div class="wiz-nav"><button class="wiz-back" type="button" onclick="prevAddStep()">← Back</button><button class="wiz-next" type="button" onclick="nextAddStep()">Continue →</button></div>
     </section>
     <section class="wiz-step" id="wiz-step-3">
-      <div class="wiz-title">Pin the Location</div><div class="wiz-sub">Use your location for a quick pin, or tap anywhere on the map to adjust it.</div>
+      <div class="wiz-title">Location</div><div class="wiz-sub">Use your location for a quick pin, or tap anywhere on the map to adjust it.</div>
       <div class="wiz-loc-actions"><button class="wiz-small" type="button" onclick="requestUserLocation(true,true)">📍 Use My Location</button><button class="wiz-small" type="button" onclick="useLastBhandaraLocation()">📌 Last Location</button></div>
-      <label class="lbl">Pandal Location * <span style="color:var(--gn);font-size:.72rem;font-weight:600" id="pin-ok"></span></label>
+      <label class="lbl">Event Location * <span style="color:var(--gn);font-size:.72rem;font-weight:600" id="pin-ok"></span></label>
       <div class="pin-map-wrap"><div id="add-map"></div><div class="pin-hint" id="pin-hint">👆 Tap map to drop your pin</div></div>
       <div id="wiz-location-text" class="wiz-tip">No location selected yet.</div>
       <div class="wiz-nav"><button class="wiz-back" type="button" onclick="prevAddStep()">← Back</button><button class="wiz-next" type="button" onclick="nextAddStep()">Continue →</button></div>
     </section>
     <section class="wiz-step" id="wiz-step-4">
-      <div class="wiz-title">UPI & Final Preview</div><div class="wiz-sub">Add your donation UPI once. This is saved only in this browser to make your next listing faster.</div>
-      <label class="lbl">Donation UPI ID *</label><input type="text" class="inp" placeholder="samiti@upi" id="a-upi" autocomplete="off" oninput="saveBhandaraDraftMemory()">
+      <div class="wiz-title">Final Preview</div><div class="wiz-sub">Review the event before publishing. Bhandara donations can use UPI.</div>
+      <label class="lbl">Donation UPI ID <span id="upi-required-mark">*</span></label><input type="text" class="inp" placeholder="samiti@upi" id="a-upi" autocomplete="off" oninput="saveBhandaraDraftMemory()">
       <div class="wiz-memory">💾 Your UPI ID is stored locally on this device/browser and is not sent anywhere until you publish a Bhandara.</div>
-      <div class="wiz-preview" id="wiz-preview"><div class="wiz-preview-hero"><div class="wiz-preview-emoji" id="prev-emoji">🍛</div><div class="wiz-preview-name" id="prev-name">Your Bhandara</div><div class="wiz-preview-org" id="prev-org">Your Samiti</div></div><div class="wiz-preview-body"><div class="wiz-preview-row"><b>📅 Date</b><span id="prev-date">–</span></div><div class="wiz-preview-row"><b>⏰ Time</b><span id="prev-time">–</span></div><div class="wiz-preview-row"><b>📍 Address</b><span id="prev-addr">–</span></div><div class="wiz-preview-row"><b>🍛 Menu</b><span id="prev-menu">–</span></div><div class="wiz-preview-row"><b>🎁 Sponsor</b><span id="prev-sp">–</span></div><div class="wiz-preview-row"><b>🤝 UPI</b><span id="prev-upi">–</span></div></div></div>
+      <div class="wiz-preview" id="wiz-preview"><div class="wiz-preview-hero"><div class="wiz-preview-emoji" id="prev-emoji">🍛</div><div class="wiz-preview-name" id="prev-name">Your Bhandara</div><div class="wiz-preview-org" id="prev-org">Your Samiti</div></div><div class="wiz-preview-body"><div class="wiz-preview-row"><b>📅 Date</b><span id="prev-date">–</span></div><div class="wiz-preview-row"><b>⏰ Time</b><span id="prev-time">–</span></div><div class="wiz-preview-row"><b>📍 Address</b><span id="prev-addr">–</span></div><div class="wiz-preview-row" id="prev-menu-row"><b>🍛 Menu</b><span id="prev-menu">–</span></div><div class="wiz-preview-row" id="prev-sp-row"><b>🎁 Sponsor</b><span id="prev-sp">–</span></div><div class="wiz-preview-row" id="prev-sahyog-row" style="display:none"><b>🤝 Sahyog</b><span id="prev-sahyog">–</span></div><div class="wiz-preview-row"><b>🤝 UPI</b><span id="prev-upi">–</span></div></div></div>
       <button class="wiz-edit" type="button" onclick="toggleAddEdit()">✏️ Edit details</button>
       <div id="wiz-edit-menu" style="display:none;background:var(--or-ll);border:1px solid var(--bd);border-radius:var(--rs);padding:.7rem;margin-bottom:.65rem">
         <div style="font-size:.72rem;font-weight:700;color:var(--t3);margin-bottom:.5rem;text-transform:uppercase">Choose what to edit</div>
