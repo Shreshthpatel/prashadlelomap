@@ -1091,6 +1091,7 @@ function go(id, dir='forward') {
     }, { once: true });
   }));
   prevScr = curScr; curScr = id;
+  try{localStorage.setItem('prashad_lelo_last_screen_v1',id);}catch(_){}
   window.scrollTo(0, 0);
   if (id === 's-bhakt') { initMainMap(); loadBhaktView(); }
   if (id === 's-add')   { startAddWizard(); }
@@ -1199,15 +1200,39 @@ function init() {
   sb = supabase.createClient(SUPA_URL, SUPA_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'prashad-lelo-jabalpur-auth' } });
   sb.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
-    if (currentUser && (curScr === 's-land' || curScr === 's-auth')) {
-      loadUserMeta().then(ok => { if (ok) go('s-dash'); });
+    if(event==='SIGNED_IN' && currentUser && (curScr==='s-land'||curScr==='s-auth')){
+      loadUserMeta().then(ok=>{if(ok)go('s-dash');});
     }
-    if (!currentUser && curScr === 's-dash') go('s-land', 'back');
+    if(event==='SIGNED_OUT' && !currentUser && ['s-dash','s-add','s-admin','s-admin-samitis'].includes(curScr))go('s-land','back');
   });
-  sb.auth.getSession().then(({ data }) => {
-    currentUser = data?.session?.user || null;
-    if (currentUser && curScr === 's-land') loadUserMeta().then(ok => { if (ok) go('s-dash'); });
-  });
+  sb.auth.getSession().then(async ({data})=>{
+    currentUser=data?.session?.user||null;
+    const protectedScreens=['s-dash','s-add','s-admin','s-admin-samitis'];
+    if(!protectedScreens.includes(curScr)){
+      if(currentUser && (curScr==='s-land'||curScr==='s-auth')){
+        const ok=await loadUserMeta();
+        if(ok)go('s-dash');
+      }
+      return;
+    }
+    if(!currentUser){go('s-land','back');return;}
+    const ok=await loadUserMeta();
+    if(!ok){go('s-land','back');return;}
+    if(curScr==='s-dash')renderDash();
+    else if(curScr==='s-add')startAddWizard();
+    else if(curScr==='s-admin')loadAdmin(false);
+    else if(curScr==='s-admin-samitis'){if(isAdmin)loadAdminUsers();else go('s-dash','back');}
+  }).catch(()=>{if(['s-dash','s-add','s-admin','s-admin-samitis'].includes(curScr))go('s-land','back');});
+}
+function restoreSavedScreen(){
+  const allowed=['s-land','s-auth','s-bhakt','s-dtl','s-dash','s-admin','s-admin-samitis','s-add'];
+  let saved='s-land';
+  try{const candidate=localStorage.getItem('prashad_lelo_last_screen_v1');if(allowed.includes(candidate))saved=candidate;}catch(_){}
+  if(saved==='s-dtl')saved='s-bhakt';
+  curScr=saved;prevScr=saved==='s-bhakt'?'s-land':'s-bhakt';
+  document.querySelectorAll('.scr').forEach(el=>el.classList.toggle('on',el.id===saved));
+  document.querySelectorAll('.scr').forEach(el=>el.classList.remove('exit','from-back'));
+  if(saved==='s-bhakt')setTimeout(()=>{initMainMap();loadBhaktView();},0);
 }
 async function loadUserMeta() {
   if (!currentUser) return;
@@ -1998,6 +2023,7 @@ try{if(!localStorage.getItem(BH_SITE_VERSION_KEY))localStorage.setItem(BH_SITE_V
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{});});}
 window.addEventListener('online',()=>{if(curScr==='s-bhakt')checkBhaktUpdates(false);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&curScr==='s-bhakt')checkBhaktUpdates(false);});
+restoreSavedScreen();
 init();
 </script>
 </body>
