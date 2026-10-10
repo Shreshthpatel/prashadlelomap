@@ -1379,7 +1379,7 @@ const BH_FEED_LAST_CHECK_KEY='prashad_lelo_bhakt_last_check_v1';
 const BH_FEED_VERSION_KEY='prashad_lelo_bhakt_feed_version_v1';
 const BH_SITE_VERSION_KEY='prashad_lelo_site_version_v1';
 const BH_SITE_ETAG_KEY='prashad_lelo_site_etag_v1';
-const BH_SITE_BUILD_VERSION='2026-10-11-bhakt-cache-1';
+const BH_SITE_BUILD_VERSION='2026-10-11-bhakt-cache-2';
 const BH_SHELL_CACHE='prashad-lelo-shell-v1';
 let bhaktDbPromise=null, bhaktCheckTimer=null, bhaktCheckInFlight=false;
 
@@ -1469,50 +1469,44 @@ async function refreshBhaktFeedFromServer(){
   return record;
 }
 async function checkBhaktSiteVersion(){
-  // ETag/Last-Modified detects every deployed index.html change without relying
-  // on someone remembering to bump a version number.
-  try{
-    const head=await fetch('/index.html?check='+Date.now(),{method:'HEAD',cache:'no-store',credentials:'same-origin'});
-    const tag=head.headers.get('etag')||head.headers.get('last-modified')||'';
-    if(head.ok&&tag){
-      let knownTag='';
-      try{knownTag=localStorage.getItem(BH_SITE_ETAG_KEY)||'';}catch(_){}
-      if(knownTag&&knownTag===tag)return false;
-      if(knownTag&&knownTag!==tag){
-        const page=await fetch('/index.html?etag='+encodeURIComponent(tag),{cache:'no-store',credentials:'same-origin'});
-        if(!page.ok)return false;
-        const html=page.clone();
-        const cache=await caches.open(BH_SHELL_CACHE);
-        await cache.put(new URL('/',location.origin).toString(),html.clone());
-        await cache.put(new URL('/index.html',location.origin).toString(),html.clone());
-        try{localStorage.setItem(BH_SITE_ETAG_KEY,tag);}catch(_){}
-        try{
-          const vr=await fetch('/version.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});
-          if(vr.ok){const vi=await vr.json();if(vi.version)localStorage.setItem(BH_SITE_VERSION_KEY,String(vi.version));}
-        }catch(_){}
-        location.reload();
-        return true;
-      }
-      try{localStorage.setItem(BH_SITE_ETAG_KEY,tag);}catch(_){}
-      // On first sight of an ETag, also use the version file to catch a stale shell.
-    }
-  }catch(_){}
+  // Always compare version.json; never let an unchanged ETag skip the version check.
+  let latest='';
   try{
     const response=await fetch('/version.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});
     if(!response.ok)return false;
-    const info=await response.json(), latest=String(info.version||'');
+    const info=await response.json();
+    latest=String(info.version||'');
     if(!latest)return false;
-    let known='';
-    try{known=localStorage.getItem(BH_SITE_VERSION_KEY)||'';}catch(_){}
-    if(!known){known=BH_SITE_BUILD_VERSION;try{localStorage.setItem(BH_SITE_VERSION_KEY,known);}catch(_){}}
-    if(known===latest)return false;
-    const page=await fetch('/index.html?version='+encodeURIComponent(latest),{cache:'no-store',credentials:'same-origin'});
-    if(!page.ok)return false;
-    const html=page.clone();
-    const cache=await caches.open(BH_SHELL_CACHE);
-    await cache.put(new URL('/',location.origin).toString(),html.clone());
-    await cache.put(new URL('/index.html',location.origin).toString(),html.clone());
+  }catch(_){return false;}
+
+  let knownVersion='',knownTag='';
+  try{knownVersion=localStorage.getItem(BH_SITE_VERSION_KEY)||'';}catch(_){}
+  try{knownTag=localStorage.getItem(BH_SITE_ETAG_KEY)||'';}catch(_){}
+  if(!knownVersion)knownVersion=BH_SITE_BUILD_VERSION;
+
+  let latestTag='';
+  try{
+    const head=await fetch('/index.html?check='+Date.now(),{method:'HEAD',cache:'no-store',credentials:'same-origin'});
+    if(head.ok)latestTag=head.headers.get('etag')||head.headers.get('last-modified')||'';
+  }catch(_){}
+
+  const versionChanged=knownVersion!==latest;
+  const tagChanged=!!(knownTag&&latestTag&&knownTag!==latestTag);
+  if(!versionChanged&&!tagChanged){
     try{localStorage.setItem(BH_SITE_VERSION_KEY,latest);}catch(_){}
+    if(latestTag){try{localStorage.setItem(BH_SITE_ETAG_KEY,latestTag);}catch(_){}}
+    return false;
+  }
+
+  // Refresh both navigation cache entries with the network copy before reloading.
+  try{
+    const page=await fetch('/index.html?refresh='+encodeURIComponent(latest)+'-'+Date.now(),{cache:'no-store',credentials:'same-origin'});
+    if(!page.ok)return false;
+    const cache=await caches.open(BH_SHELL_CACHE);
+    await cache.put(new URL('/',location.origin).toString(),page.clone());
+    await cache.put(new URL('/index.html',location.origin).toString(),page.clone());
+    try{localStorage.setItem(BH_SITE_VERSION_KEY,latest);}catch(_){}
+    if(latestTag){try{localStorage.setItem(BH_SITE_ETAG_KEY,latestTag);}catch(_){}}
     location.reload();
     return true;
   }catch(_){return false;}
@@ -2022,7 +2016,7 @@ function applyAppLanguage(){document.documentElement.lang=appLang==='hi'?'hi':'e
 
 applyAppLanguage();
 try{if(!localStorage.getItem(BH_SITE_VERSION_KEY))localStorage.setItem(BH_SITE_VERSION_KEY,BH_SITE_BUILD_VERSION);}catch(_){}
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{});});}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});});}
 window.addEventListener('online',()=>{if(curScr==='s-bhakt')checkBhaktUpdates(false);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&curScr==='s-bhakt')checkBhaktUpdates(false);});
 restoreSavedScreen();
