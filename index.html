@@ -1448,7 +1448,7 @@ async function checkBhaktSiteVersion(){
     if(!latest)return false;
     let known='';
     try{known=localStorage.getItem(BH_SITE_VERSION_KEY)||'';}catch(_){}
-    if(!known){try{localStorage.setItem(BH_SITE_VERSION_KEY,latest);}catch(_){}return false;}
+    if(!known){known=BH_SITE_BUILD_VERSION;try{localStorage.setItem(BH_SITE_VERSION_KEY,known);}catch(_){}}
     if(known===latest)return false;
     const page=await fetch('/index.html?version='+encodeURIComponent(latest),{cache:'no-store',credentials:'same-origin'});
     if(!page.ok)return false;
