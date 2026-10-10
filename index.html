@@ -1435,7 +1435,7 @@ async function refreshBhaktFeedFromServer(){
     try{after=await getBhaktFeedVersion();}catch(_){}
   }
   const record={items:bhaktFutureItems(items),version:after,savedAt:Date.now()};
-  await writeBhaktCache(record);
+  await writeBhaktCache(record).catch(()=>{});
   try{localStorage.setItem(BH_FEED_VERSION_KEY,after===null?'':after);}catch(_){}
   renderBhaktItems(record.items);
   return record;
@@ -1452,7 +1452,7 @@ async function checkBhaktSiteVersion(){
     if(known===latest)return false;
     const page=await fetch('/index.html?version='+encodeURIComponent(latest),{cache:'no-store',credentials:'same-origin'});
     if(!page.ok)return false;
-    const html=await page.clone();
+    const html=page.clone();
     const cache=await caches.open(BH_SHELL_CACHE);
     await cache.put(new URL('/',location.origin).toString(),html.clone());
     await cache.put(new URL('/index.html',location.origin).toString(),html.clone());
