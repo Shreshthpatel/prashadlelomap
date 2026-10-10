@@ -1351,6 +1351,7 @@ const BH_FEED_CHECK_MS=5*60*1000;
 const BH_FEED_LAST_CHECK_KEY='prashad_lelo_bhakt_last_check_v1';
 const BH_FEED_VERSION_KEY='prashad_lelo_bhakt_feed_version_v1';
 const BH_SITE_VERSION_KEY='prashad_lelo_site_version_v1';
+const BH_SITE_ETAG_KEY='prashad_lelo_site_etag_v1';
 const BH_SITE_BUILD_VERSION='2026-10-11-bhakt-cache-1';
 const BH_SHELL_CACHE='prashad-lelo-shell-v1';
 let bhaktDbPromise=null, bhaktCheckTimer=null, bhaktCheckInFlight=false;
@@ -1441,6 +1442,34 @@ async function refreshBhaktFeedFromServer(){
   return record;
 }
 async function checkBhaktSiteVersion(){
+  // ETag/Last-Modified detects every deployed index.html change without relying
+  // on someone remembering to bump a version number.
+  try{
+    const head=await fetch('/index.html?check='+Date.now(),{method:'HEAD',cache:'no-store',credentials:'same-origin'});
+    const tag=head.headers.get('etag')||head.headers.get('last-modified')||'';
+    if(head.ok&&tag){
+      let knownTag='';
+      try{knownTag=localStorage.getItem(BH_SITE_ETAG_KEY)||'';}catch(_){}
+      if(knownTag&&knownTag===tag)return false;
+      if(knownTag&&knownTag!==tag){
+        const page=await fetch('/index.html?etag='+encodeURIComponent(tag),{cache:'no-store',credentials:'same-origin'});
+        if(!page.ok)return false;
+        const html=page.clone();
+        const cache=await caches.open(BH_SHELL_CACHE);
+        await cache.put(new URL('/',location.origin).toString(),html.clone());
+        await cache.put(new URL('/index.html',location.origin).toString(),html.clone());
+        try{localStorage.setItem(BH_SITE_ETAG_KEY,tag);}catch(_){}
+        try{
+          const vr=await fetch('/version.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});
+          if(vr.ok){const vi=await vr.json();if(vi.version)localStorage.setItem(BH_SITE_VERSION_KEY,String(vi.version));}
+        }catch(_){}
+        location.reload();
+        return true;
+      }
+      try{localStorage.setItem(BH_SITE_ETAG_KEY,tag);}catch(_){}
+      // On first sight of an ETag, also use the version file to catch a stale shell.
+    }
+  }catch(_){}
   try{
     const response=await fetch('/version.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});
     if(!response.ok)return false;
