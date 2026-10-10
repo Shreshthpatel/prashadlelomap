@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prashad-lelo-shell-v1';
+const CACHE_NAME = 'prashad-lelo-shell-v2';
 const SHELL_URLS = ['/', '/index.html'];
 
 self.addEventListener('install', event => {
@@ -6,7 +6,7 @@ self.addEventListener('install', event => {
     const cache = await caches.open(CACHE_NAME);
     for (const url of SHELL_URLS) {
       try {
-        const response = await fetch(url, { cache: 'no-store' });
+        const response = await fetch(url + (url.includes('?') ? '&' : '?') + 'sw-install=' + Date.now(), { cache: 'no-store' });
         if (response.ok) await cache.put(url, response);
       } catch (_) {}
     }
@@ -30,18 +30,22 @@ self.addEventListener('fetch', event => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
+    // Network-first prevents a stale app shell from overriding a production deploy.
+    try {
+      const response = await fetch(request, { cache: 'no-store' });
+      if (response && response.ok) {
+        await cache.put('/', response.clone());
+        await cache.put('/index.html', response.clone());
+        return response;
+      }
+    } catch (_) {}
     const cached = await cache.match(request, { ignoreSearch: true })
       || await cache.match('/')
       || await cache.match('/index.html');
     if (cached) return cached;
-
-    try {
-      const response = await fetch(request);
-      if (response && response.ok) await cache.put(request, response.clone());
-      return response;
-    } catch (error) {
-      if (cached) return cached;
-      throw error;
-    }
+    return new Response('You are offline. Please reconnect and reload.', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+    });
   })());
 });
