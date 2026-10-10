@@ -1061,6 +1061,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 
 let sb = null, currentUser = null, curMeta = {}, isAdmin = false;
 let curScr = 's-land', prevScr = 's-land';
+let restoredScreenOnLoad = 's-land';
 let curBhandara = null, selAmtVal = 101;
 let mainMap = null, addMapInst = null, pinnedLatLng = null, addMarker = null;
 let mainUserMarker = null, addUserMarker = null, userLocation = null, userLocationPending = false;
@@ -1200,7 +1201,7 @@ function init() {
   sb = supabase.createClient(SUPA_URL, SUPA_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'prashad-lelo-jabalpur-auth' } });
   sb.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
-    if(event==='SIGNED_IN' && currentUser && (curScr==='s-land'||curScr==='s-auth')){
+    if(event==='SIGNED_IN' && currentUser && (curScr==='s-land'||curScr==='s-auth') && (restoredScreenOnLoad==='s-land'||restoredScreenOnLoad==='s-auth')){
       loadUserMeta().then(ok=>{if(ok)go('s-dash');});
     }
     if(event==='SIGNED_OUT' && !currentUser && ['s-dash','s-add','s-admin','s-admin-samitis'].includes(curScr))go('s-land','back');
@@ -1209,7 +1210,7 @@ function init() {
     currentUser=data?.session?.user||null;
     const protectedScreens=['s-dash','s-add','s-admin','s-admin-samitis'];
     if(!protectedScreens.includes(curScr)){
-      if(currentUser && (curScr==='s-land'||curScr==='s-auth')){
+      if(currentUser && (curScr==='s-land'||curScr==='s-auth') && (restoredScreenOnLoad==='s-land'||restoredScreenOnLoad==='s-auth')){
         const ok=await loadUserMeta();
         if(ok)go('s-dash');
       }
@@ -1229,6 +1230,7 @@ function restoreSavedScreen(){
   let saved='s-land';
   try{const candidate=localStorage.getItem('prashad_lelo_last_screen_v1');if(allowed.includes(candidate))saved=candidate;}catch(_){}
   if(saved==='s-dtl')saved='s-bhakt';
+  restoredScreenOnLoad=saved;
   curScr=saved;prevScr=saved==='s-bhakt'?'s-land':'s-bhakt';
   document.querySelectorAll('.scr').forEach(el=>el.classList.toggle('on',el.id===saved));
   document.querySelectorAll('.scr').forEach(el=>el.classList.remove('exit','from-back'));
