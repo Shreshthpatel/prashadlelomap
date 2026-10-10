@@ -1344,67 +1344,191 @@ function gradFor(e) { return ({'🍛':'#FFD08A,#E8620A','🌸':'#B5D9FF,#2E86DE'
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── BHAKT VIEW ───────────────────────────────────────────────
-async function loadBhaktView() {
-  const nowMs=Date.now();
-  if (bhaktLoadedAt && nowMs-bhaktLoadedAt < 60000) {
-    renderNearbyChips();
-    document.getElementById('bhakt-list').innerHTML = bhandaraItems.length===0
-      ? '<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Seva & Events right now. Check back soon!</div></div>'
-      : bhandaraItems.map(b=>`
-      <div class="bc" onclick="openDetail('${b.id}')">
-        <div class="bc-img" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
-        <div class="bc-body">
-          <div class="bc-name">${esc(b.name)}</div>
-          <div class="bc-org">${esc(b.samiti_name||'')}${b.samiti_verified ? '<span class="verified-badge">✓ Verified</span>' : ''} · ${esc(b.area||'Jabalpur')}</div>
-          <div class="tag-row">
-            ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
-            <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
-            <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
-            <span class="tag t-pu">${b.event_type==='maha_aarti'?'🪔 Maha Aarti':b.event_type==='maha_aarti_bhandara'?'🙏 Maha Aarti + Bhandara':'🍛 Bhandara'}</span>
-          </div>
-        </div>
-      </div>`).join('');
-    updateMapMarkers(bhandaraItems);
-    if (userLocation) centerMainMapOnUser();
-    return;
+const BH_CACHE_DB='prashad-lelo-bhakt-cache-v1';
+const BH_CACHE_STORE='feed';
+const BH_CACHE_KEY='approved-public-feed';
+const BH_FEED_CHECK_MS=5*60*1000;
+const BH_FEED_LAST_CHECK_KEY='prashad_lelo_bhakt_last_check_v1';
+const BH_FEED_VERSION_KEY='prashad_lelo_bhakt_feed_version_v1';
+const BH_SITE_VERSION_KEY='prashad_lelo_site_version_v1';
+const BH_SITE_BUILD_VERSION='2026-10-11-bhakt-cache-1';
+const BH_SHELL_CACHE='prashad-lelo-shell-v1';
+let bhaktDbPromise=null, bhaktCheckTimer=null, bhaktCheckInFlight=false;
+
+function openBhaktCacheDb(){
+  if(!('indexedDB' in window))return Promise.reject(new Error('IndexedDB unavailable'));
+  if(bhaktDbPromise)return bhaktDbPromise;
+  bhaktDbPromise=new Promise((resolve,reject)=>{
+    const req=indexedDB.open(BH_CACHE_DB,1);
+    req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(BH_CACHE_STORE))req.result.createObjectStore(BH_CACHE_STORE);};
+    req.onsuccess=()=>{const db=req.result;db.onversionchange=()=>db.close();resolve(db);};
+    req.onerror=()=>reject(req.error||new Error('Could not open local cache'));
+  });
+  return bhaktDbPromise;
+}
+async function readBhaktCache(){
+  const db=await openBhaktCacheDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(BH_CACHE_STORE,'readonly');
+    const req=tx.objectStore(BH_CACHE_STORE).get(BH_CACHE_KEY);
+    req.onsuccess=()=>resolve(req.result||null);
+    req.onerror=()=>reject(req.error||new Error('Could not read local cache'));
+  });
+}
+async function writeBhaktCache(record){
+  const db=await openBhaktCacheDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(BH_CACHE_STORE,'readwrite');
+    tx.objectStore(BH_CACHE_STORE).put(record,BH_CACHE_KEY);
+    tx.oncomplete=()=>resolve(true);
+    tx.onerror=()=>reject(tx.error||new Error('Could not save local cache'));
+    tx.onabort=()=>reject(tx.error||new Error('Local cache write aborted'));
+  });
+}
+function bhaktFutureItems(items){
+  const today=new Date().toISOString().split('T')[0];
+  return (Array.isArray(items)?items:[]).filter(b=>b&&b.event_date&&b.event_date>=today);
+}
+function renderBhaktItems(items){
+  const list=document.getElementById('bhakt-list');
+  const cleaned=bhaktFutureItems(items);
+  bhandaraItems=cleaned;
+  bhaktLoadedAt=Date.now();
+  renderNearbyChips();
+  if(list)list.innerHTML=cleaned.length===0
+    ? '<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Bhandaras right now. Check back soon!</div></div>'
+    : cleaned.map(b=>'<div class="bc" onclick="openDetail(\''+esc(b.id)+'\')">'+
+      '<div class="bc-img" style="background:linear-gradient(135deg,'+gradFor(b.emoji)+')">'+(b.emoji||'🪔')+'</div>'+
+      '<div class="bc-body"><div class="bc-name">'+esc(b.name)+'</div>'+
+      '<div class="bc-org">'+esc(b.samiti_name||'')+(b.samiti_verified?'<span class="verified-badge">✓ Verified</span>':'')+' · '+esc(b.area||'Jabalpur')+'</div>'+
+      '<div class="tag-row">'+
+      (isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>')+
+      '<span class="tag t-or">⏰ '+esc(b.start_time)+'–'+esc(b.end_time)+'</span>'+
+      '<span class="tag t-or">📅 '+fmtDate(b.event_date)+'</span>'+
+      '<span class="tag t-pu">'+(b.event_type==='maha_aarti'?'🪔 Maha Aarti':b.event_type==='maha_aarti_bhandara'?'🙏 Maha Aarti + Bhandara':'🍛 Bhandara')+'</span>'+
+      '</div></div></div>').join('');
+  updateMapMarkers(cleaned);
+  renderOpenBhandaraSwipeCard();
+  if(userLocation)centerMainMapOnUser();
+}
+async function getBhaktFeedVersion(){
+  const {data,error}=await sb.rpc('get_bhandara_feed_version');
+  if(error)throw error;
+  if(data===null||data===undefined)throw new Error('Public feed version is unavailable');
+  return String(data);
+}
+async function fetchApprovedBhaktFeed(){
+  const today=new Date().toISOString().split('T')[0];
+  const {data,error}=await sb.from('bhandaras')
+    .select('id,event_type,sahyog,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at')
+    .eq('status','approved').gte('event_date',today).order('event_date',{ascending:true});
+  if(error)throw error;
+  return data||[];
+}
+async function refreshBhaktFeedFromServer(){
+  let before=null, after=null, items;
+  try{before=await getBhaktFeedVersion();}catch(_){}
+  items=await fetchApprovedBhaktFeed();
+  try{after=await getBhaktFeedVersion();}catch(_){}
+  if(before!==null&&after!==null&&before!==after){
+    items=await fetchApprovedBhaktFeed();
+    try{after=await getBhaktFeedVersion();}catch(_){}
   }
-  if (!sb) {
+  const record={items:bhaktFutureItems(items),version:after,savedAt:Date.now()};
+  await writeBhaktCache(record);
+  try{localStorage.setItem(BH_FEED_VERSION_KEY,after===null?'':after);}catch(_){}
+  renderBhaktItems(record.items);
+  return record;
+}
+async function checkBhaktSiteVersion(){
+  try{
+    const response=await fetch('/version.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});
+    if(!response.ok)return false;
+    const info=await response.json(), latest=String(info.version||'');
+    if(!latest)return false;
+    let known='';
+    try{known=localStorage.getItem(BH_SITE_VERSION_KEY)||'';}catch(_){}
+    if(!known){try{localStorage.setItem(BH_SITE_VERSION_KEY,latest);}catch(_){}return false;}
+    if(known===latest)return false;
+    const page=await fetch('/index.html?version='+encodeURIComponent(latest),{cache:'no-store',credentials:'same-origin'});
+    if(!page.ok)return false;
+    const html=await page.clone();
+    const cache=await caches.open(BH_SHELL_CACHE);
+    await cache.put(new URL('/',location.origin).toString(),html.clone());
+    await cache.put(new URL('/index.html',location.origin).toString(),html.clone());
+    try{localStorage.setItem(BH_SITE_VERSION_KEY,latest);}catch(_){}
+    location.reload();
+    return true;
+  }catch(_){return false;}
+}
+function scheduleBhaktUpdateCheck(){
+  if(bhaktCheckTimer)clearTimeout(bhaktCheckTimer);
+  if(curScr!=='s-bhakt')return;
+  let last=0;
+  try{last=Number(localStorage.getItem(BH_FEED_LAST_CHECK_KEY)||0);}catch(_){}
+  const remaining=Math.max(1000,BH_FEED_CHECK_MS-(Date.now()-last));
+  bhaktCheckTimer=setTimeout(()=>{if(curScr==='s-bhakt')checkBhaktUpdates(false);},remaining);
+}
+async function checkBhaktUpdates(force){
+  if(curScr!=='s-bhakt'||!sb||bhaktCheckInFlight)return;
+  let last=0;
+  try{last=Number(localStorage.getItem(BH_FEED_LAST_CHECK_KEY)||0);}catch(_){}
+  if(!force&&last&&Date.now()-last<BH_FEED_CHECK_MS){scheduleBhaktUpdateCheck();return;}
+  bhaktCheckInFlight=true;
+  try{localStorage.setItem(BH_FEED_LAST_CHECK_KEY,String(Date.now()));}catch(_){}
+  try{
+    const siteChanged=await checkBhaktSiteVersion();
+    if(siteChanged)return;
+    const cached=await readBhaktCache().catch(()=>null);
+    const remoteVersion=await getBhaktFeedVersion();
+    if(!cached||String(cached.version||'')!==remoteVersion){
+      await refreshBhaktFeedFromServer();
+    }else{
+      const pruned=bhaktFutureItems(cached.items);
+      if(pruned.length!==(cached.items||[]).length){
+        cached.items=pruned;cached.savedAt=Date.now();
+        await writeBhaktCache(cached).catch(()=>{});
+      }
+      renderBhaktItems(pruned);
+    }
+  }catch(_){
+    // Keep the last successful local copy when the network or version check fails.
+  }finally{
+    bhaktCheckInFlight=false;
+    scheduleBhaktUpdateCheck();
+  }
+}
+async function loadBhaktView(){
+  if(!sb){
     document.getElementById('chip-row').textContent='Map service is unavailable. Please reload the page.';
     document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not connect</div><div class="empty-s">Reload the page and try again.</div></div>';
     return;
   }
-  const today=new Date().toISOString().split('T')[0];
-  const { data, error } = await sb.from('bhandaras').select('id,event_type,sahyog,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('status','approved').gte('event_date',today).order('event_date',{ascending:true});
-  if (error) {
-    document.getElementById('chip-row').textContent='Could not load nearby Seva & Events.';
-    document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not load Seva & Events</div><div class="empty-s">'+esc(error.message)+'</div></div>';
+  let cached=null;
+  try{cached=await readBhaktCache();}catch(_){}
+  if(cached&&Array.isArray(cached.items)){
+    const cleaned=bhaktFutureItems(cached.items);
+    if(cleaned.length!==(cached.items||[]).length){
+      cached.items=cleaned;
+      writeBhaktCache(cached).catch(()=>{});
+    }
+    renderBhaktItems(cleaned);
+    scheduleBhaktUpdateCheck();
+    checkBhaktUpdates(false);
     return;
   }
-  const items = data||[];
-  bhandaraItems = items;
-  bhaktLoadedAt = Date.now();
-  renderNearbyChips();
-  document.getElementById('bhakt-list').innerHTML = items.length===0
-    ? `<div class="empty"><span class="empty-i">🪔</span><div class="empty-h">No Bhandaras Yet</div><div class="empty-s">No approved Bhandaras right now. Check back soon!</div></div>`
-    : items.map(b=>`
-      <div class="bc" onclick="openDetail('${b.id}')">
-        <div class="bc-img" style="background:linear-gradient(135deg,${gradFor(b.emoji)})">${b.emoji||'🪔'}</div>
-        <div class="bc-body">
-          <div class="bc-name">${esc(b.name)}</div>
-          <div class="bc-org">${esc(b.samiti_name||'')}${b.samiti_verified ? '<span class="verified-badge">✓ Verified</span>' : ''} · ${esc(b.area||'Jabalpur')}</div>
-          <div class="tag-row">
-            ${isLive(b)?'<span class="tag t-live"><span class="ldot"></span> Live</span>':'<span class="tag t-gld">⏳ Upcoming</span>'}
-            <span class="tag t-or">⏰ ${esc(b.start_time)}–${esc(b.end_time)}</span>
-            <span class="tag t-or">📅 ${fmtDate(b.event_date)}</span>
-            <span class="tag t-pu">${b.event_type==='maha_aarti'?'🪔 Maha Aarti':b.event_type==='maha_aarti_bhandara'?'🙏 Maha Aarti + Bhandara':'🍛 Bhandara'}</span>
-          </div>
-        </div>
-      </div>`).join('');
-  updateMapMarkers(items);
-  renderOpenBhandaraSwipeCard();
-  if (userLocation) centerMainMapOnUser();
+  // First visit/cache miss: persist the check time before network work so refreshes
+  // cannot keep resetting the five-minute window or trigger a request storm.
+  try{localStorage.setItem(BH_FEED_LAST_CHECK_KEY,String(Date.now()));}catch(_){}
+  try{
+    await refreshBhaktFeedFromServer();
+    scheduleBhaktUpdateCheck();
+  }catch(error){
+    document.getElementById('chip-row').textContent='Could not load nearby Seva & Events.';
+    document.getElementById('bhakt-list').innerHTML='<div class="empty"><div class="empty-h">Could not load Seva & Events</div><div class="empty-s">Please check your connection and try again.</div></div>';
+    scheduleBhaktUpdateCheck();
+  }
 }
-
 
 // ── OPEN BHANDARA SWIPE CARD ─────────────────────────────────
 const OPEN_BH_DISMISSED_KEY='prashad_lelo_open_bh_dismissed';
@@ -1510,7 +1634,8 @@ function bindOpenSwipeGesture(){
 
 // ── DETAIL ───────────────────────────────────────────────────
 async function openDetail(id) {
-  const {data}=await sb.from('bhandaras').select('id,event_type,sahyog,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('id',id).single();
+  let data=(bhandaraItems||[]).find(b=>String(b.id)===String(id))||null;
+  if(!data&&sb){const result=await sb.from('bhandaras').select('id,event_type,sahyog,name,samiti_name,samiti_phone,samiti_email,address,area,lat,lng,start_time,end_time,event_date,emoji,message,menu,sponsor,upi_id,status,samiti_verified,created_at').eq('id',id).single();data=result.data||null;}
   if (!data) { toast('Could not load details'); return; }
   curBhandara=data;
   document.getElementById('d-tb').textContent=data.name;
@@ -1840,6 +1965,10 @@ function applyAppLanguage(){document.documentElement.lang=appLang==='hi'?'hi':'e
 
 
 applyAppLanguage();
+try{if(!localStorage.getItem(BH_SITE_VERSION_KEY))localStorage.setItem(BH_SITE_VERSION_KEY,BH_SITE_BUILD_VERSION);}catch(_){}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{});});}
+window.addEventListener('online',()=>{if(curScr==='s-bhakt')checkBhaktUpdates(false);});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&curScr==='s-bhakt')checkBhaktUpdates(false);});
 init();
 </script>
 </body>
